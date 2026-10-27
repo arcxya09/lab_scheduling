@@ -1,0 +1,22 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+
+  <!--
+    MSI installer for the published app. Build it through scripts/release-win.ps1, which publishes
+    the app first and passes PublishDir and ProductVersion.
+  -->
+  <PropertyGroup>
+    <ProductVersion Condition="'$(ProductVersion)' == ''">3.0.0</ProductVersion>
+    <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildThisFileDirectory)..\dist\3.0\实验排班生成器-win-x64\</PublishDir>
+    <OutputName>LabSchedule-$(ProductVersion)-win-x64-setup</OutputName>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <Cultures>zh-CN</Cultures>
+    <!-- Some Windows App SDK DLLs list many languages in their version info, which ICE03 rejects. -->
+    <SuppressIces>ICE03</SuppressIces>
+    <DefineConstants>PublishDir=$(PublishDir);ProductVersion=$(ProductVersion);IconPath=$(MSBuildThisFileDirectory)..\src\LabSchedule.App\Assets\AppIcon.ico</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,44 @@
+{
+  "year": 2028,
+  "title": "2028",
+  "settings": {
+    "page_size": "A4",
+    "orientation": "landscape",
+    "font": "SimHei",
+    "show_legend": true,
+    "show_weekends": true,
+    "show_maintenance_in_list": true
+  },
+  "items": [
+    {
+      "id": "EXP001",
+      "type": "experiment",
+      "name": "闰日",
+      "leader": "李",
+      "start_date": "2028-02-28",
+      "end_date": "2028-03-01",
+      "color": "#000000",
+      "description": ""
+    },
+    {
+      "id": "EXP002",
+      "type": "experiment",
+      "name": "无色一",
+      "leader": "",
+      "start_date": "2028-05-01",
+      "end_date": "2028-05-31",
+      "color": null,
+      "description": ""
+    },
+    {
+      "id": "EXP003",
+      "type": "experiment",
+      "name": "无色二",
+      "leader": "",
+      "start_date": "2028-05-01",
+      "end_date": "2028-05-31",
+      "color": null,
+      "description": ""
+    }
+  ]
+}

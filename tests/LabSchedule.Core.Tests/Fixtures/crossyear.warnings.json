@@ -1,0 +1,5 @@
+[
+  "EXP001 (外部实验) is outside 2026 and was ignored.",
+  "EXP002 (跨年实验) was clipped to 2026-01-01 - 2026-01-10.",
+  "MAINT001 (年末维护) was clipped to 2026-12-28 - 2026-12-31."
+]

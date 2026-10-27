@@ -1,0 +1,44 @@
+{
+  "year": 2026,
+  "title": "跨年测试",
+  "settings": {
+    "page_size": "A4",
+    "orientation": "landscape",
+    "font": "SimHei",
+    "show_legend": true,
+    "show_weekends": false,
+    "show_maintenance_in_list": true
+  },
+  "items": [
+    {
+      "id": "EXP001",
+      "type": "experiment",
+      "name": "外部实验",
+      "leader": "",
+      "start_date": "2025-01-01",
+      "end_date": "2025-01-02",
+      "color": null,
+      "description": ""
+    },
+    {
+      "id": "EXP002",
+      "type": "experiment",
+      "name": "跨年实验",
+      "leader": "",
+      "start_date": "2025-12-20",
+      "end_date": "2026-01-10",
+      "color": null,
+      "description": ""
+    },
+    {
+      "id": "MAINT001",
+      "type": "maintenance",
+      "name": "年末维护",
+      "leader": "张",
+      "start_date": "2026-12-28",
+      "end_date": "2027-01-03",
+      "color": "#B0B0B0",
+      "description": ""
+    }
+  ]
+}

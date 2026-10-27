@@ -1,0 +1,3 @@
+# The C# port emits HTML byte-for-byte like the original, so keep sources and fixtures in LF.
+*.cs text eol=lf
+**/Fixtures/** -text

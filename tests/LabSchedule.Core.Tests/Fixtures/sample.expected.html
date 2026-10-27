@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2026年度示例实验安排</title>
+  <style>
+    :root {
+      --ink: #182022;
+      --muted: #627076;
+      --hairline: #ccd6d8;
+      --paper: #fbfcfa;
+      --invalid: #F0F0F0;
+      --weekend: #F7F7F7;
+      --track-height: 27px;
+      --track-gap: 5px;
+      --radius: 6px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #e8eeed;
+      font-family: "Microsoft YaHei", "SimHei", "Noto Sans CJK SC", sans-serif;
+      font-size: 16px;
+      line-height: 1.38;
+    }
+    .sheet {
+      width: min(1180px, calc(100vw - 28px));
+      min-height: calc(100vh - 28px);
+      margin: 14px auto;
+      padding: 22px;
+      background: var(--paper);
+      border: 1px solid rgba(24, 32, 34, .12);
+      border-radius: 8px;
+      box-shadow: 0 18px 46px rgba(24, 32, 34, .14);
+    }
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--ink);
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.08;
+      letter-spacing: 0;
+      font-weight: 800;
+    }
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .meta span {
+      padding: 6px 9px;
+      border: 1px solid var(--hairline);
+      border-radius: 999px;
+      background: #fff;
+    }
+    .timeline-wrap { margin-top: 16px; overflow-x: auto; padding-bottom: 4px; }
+    .timeline {
+      min-width: 860px;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .day-header,
+    .month-row {
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr);
+    }
+    .day-header {
+      background: #233032;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .month-label,
+    .corner {
+      display: grid;
+      place-items: center;
+      border-right: 1px solid rgba(255, 255, 255, .18);
+    }
+    .days-grid,
+    .month-track {
+      display: grid;
+      grid-template-columns: repeat(31, minmax(0, 1fr));
+    }
+    .days-grid > div {
+      min-height: 32px;
+      display: grid;
+      place-items: center;
+      border-left: 1px solid rgba(255, 255, 255, .12);
+    }
+    .month-row {
+      border-top: 1px solid var(--hairline);
+      min-height: calc(var(--lanes) * var(--track-height) + (var(--lanes) - 1) * var(--track-gap) + 22px);
+    }
+    .month-label {
+      color: #273235;
+      background: #f5f7f5;
+      border-right: 1px solid var(--hairline);
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .month-track {
+      position: relative;
+      gap: var(--track-gap) 0;
+      grid-template-rows: repeat(var(--lanes), var(--track-height));
+      padding: 11px 0;
+      background: #fff;
+    }
+    .date-fill,
+    .date-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      pointer-events: none;
+    }
+    .date-fill {
+      left: calc((var(--day) - 1) * 100% / 31);
+      width: calc(100% / 31);
+      z-index: 0;
+    }
+    .date-line {
+      left: calc((var(--day) - 1) * 100% / 31);
+      z-index: 3;
+      border-left: 1px solid rgba(24, 32, 34, .14);
+    }
+    .date-line.end-line { left: 100%; }
+    .date-fill.invalid-day { background: var(--invalid); }
+    .date-fill.weekend-day { background: var(--weekend); }
+    .segment {
+      z-index: 2;
+      align-self: stretch;
+      margin: 0 2px;
+      padding: 5px 7px;
+      border-radius: var(--radius);
+      color: var(--segment-text);
+      background: var(--segment-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .experiment-list { margin-top: 18px; }
+    .experiment-list h2 {
+      margin: 0 0 9px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #fff;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 8px 9px;
+      text-align: left;
+      border-bottom: 1px solid var(--hairline);
+      vertical-align: top;
+    }
+    th {
+      color: #fff;
+      background: #233032;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .swatch {
+      display: inline-block;
+      width: 18px;
+      height: 12px;
+      border-radius: 4px;
+      vertical-align: -1px;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .16);
+    }
+    .note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @page {
+      size: A4 landscape;
+      margin: 7mm;
+    }
+    @media print {
+      body {
+        background: #fff;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .sheet {
+        width: 100%;
+        min-height: calc(100vh - 14mm);
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .timeline-wrap { overflow: visible; }
+      .timeline { min-width: 0; }
+      .month-row,
+      .experiment-list {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="header">
+      <h1>2026年度示例实验安排</h1>
+      <div class="meta">
+        <span>2026</span>
+        <span>12 项实验</span>
+        <span>145 天占用</span>
+      </div>
+    </header>
+    <section class="timeline-wrap" aria-label="年度实验时间安排图">
+      <div class="timeline">
+        <div class="day-header">
+          <div class="corner">月份</div>
+          <div class="days-grid"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div><div>12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div><div>19</div><div>20</div><div>21</div><div>22</div><div>23</div><div>24</div><div>25</div><div>26</div><div>27</div><div>28</div><div>29</div><div>30</div><div>31</div></div>
+        </div>
+        <div class="month-row" style="--lanes: 1;">
+  <div class="month-label">1月</div>
+  <div class="month-track">
+    <div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">2月</div>
+  <div class="month-track">
+    <div class="date-fill invalid-day" style="--day: 29;"></div>
+<div class="date-fill invalid-day" style="--day: 30;"></div>
+<div class="date-fill invalid-day" style="--day: 31;"></div>
+<div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">3月</div>
+  <div class="month-track">
+    <div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">4月</div>
+  <div class="month-track">
+    <div class="date-fill invalid-day" style="--day: 31;"></div>
+<div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">5月</div>
+  <div class="month-track">
+    <div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">6月</div>
+  <div class="month-track">
+    <div class="date-fill invalid-day" style="--day: 31;"></div>
+<div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    <div class="segment" style="grid-column: 1 / 3; grid-row: 1; --segment-color: #F28E2B; --segment-text: #182022;" title="番茄种植观察 · 张三 · 2天">番茄种植观察 · 张三 · 2天</div>
+<div class="segment" style="grid-column: 3 / 11; grid-row: 1; --segment-color: #59A14F; --segment-text: #ffffff;" title="面包发酵对比 · 李四 · 8天">面包发酵对比 · 李四 · 8天</div>
+<div class="segment" style="grid-column: 11 / 16; grid-row: 1; --segment-color: #59A14F; --segment-text: #ffffff;" title="纸飞机飞行测试 · 王五/张三 · 5天">纸飞机飞行测试 · 王五/张三 · 5天</div>
+<div class="segment" style="grid-column: 16 / 31; grid-row: 1; --segment-color: #B0B0B0; --segment-text: #182022;" title="空调检修/线路整理/门窗更换 · 赵六 · 46天">空调检修/线路整理/门窗更换 · 赵六 · 46天</div>
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">7月</div>
+  <div class="month-track">
+    <div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    <div class="segment" style="grid-column: 1 / 32; grid-row: 1; --segment-color: #B0B0B0; --segment-text: #182022;" title="空调检修/线路整理/门窗更换 · 赵六 · 46天">空调检修/线路整理/门窗更换 · 赵六 · 46天</div>
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">8月</div>
+  <div class="month-track">
+    <div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    <div class="segment" style="grid-column: 1 / 6; grid-row: 1; --segment-color: #76B7B2; --segment-text: #182022;" title="咖啡萃取对比 · 李四/钱七 · 5天">咖啡萃取对比 · 李四/钱七 · 5天</div>
+<div class="segment" style="grid-column: 6 / 12; grid-row: 1; --segment-color: #EDC948; --segment-text: #182022;" title="肥皂泡寿命测量 · 孙八 · 6天">肥皂泡寿命测量 · 孙八 · 6天</div>
+<div class="segment" style="grid-column: 12 / 24; grid-row: 1; --segment-color: #B07AA1; --segment-text: #182022;" title="盆栽浇水周期 · 周九 · 12天">盆栽浇水周期 · 周九 · 12天</div>
+<div class="segment" style="grid-column: 24 / 32; grid-row: 1; --segment-color: #FF9DA7; --segment-text: #182022;" title="风筝稳定性测试 · 吴十/郑十一 · 14天">风筝稳定性测试 · 吴十/郑十一 · 14天</div>
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">9月</div>
+  <div class="month-track">
+    <div class="date-fill invalid-day" style="--day: 31;"></div>
+<div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    <div class="segment" style="grid-column: 1 / 7; grid-row: 1; --segment-color: #FF9DA7; --segment-text: #182022;" title="风筝稳定性测试 · 吴十/郑十一 · 14天">风筝稳定性测试 · 吴十/郑十一 · 14天</div>
+<div class="segment" style="grid-column: 7 / 21; grid-row: 1; --segment-color: #9C755F; --segment-text: #ffffff;" title="冰块融化速度 · 冯十二 · 14天">冰块融化速度 · 冯十二 · 14天</div>
+<div class="segment" style="grid-column: 21 / 31; grid-row: 1; --segment-color: #BAB0AC; --segment-text: #182022;" title="纸桥承重测试 · 陈十三 · 10天">纸桥承重测试 · 陈十三 · 10天</div>
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">10月</div>
+  <div class="month-track">
+    <div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    <div class="segment" style="grid-column: 9 / 18; grid-row: 1; --segment-color: #4E79A7; --segment-text: #ffffff;" title="回形针磁化观察 · 张三 · 9天">回形针磁化观察 · 张三 · 9天</div>
+<div class="segment" style="grid-column: 18 / 26; grid-row: 1; --segment-color: #59A14F; --segment-text: #ffffff;" title="雨水收集统计 · 褚十四/冯十二 · 8天">雨水收集统计 · 褚十四/冯十二 · 8天</div>
+<div class="segment" style="grid-column: 26 / 32; grid-row: 1; --segment-color: #E15759; --segment-text: #ffffff;" title="蚂蚁路径记录 · 冯十二 · 6天">蚂蚁路径记录 · 冯十二 · 6天</div>
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">11月</div>
+  <div class="month-track">
+    <div class="date-fill invalid-day" style="--day: 31;"></div>
+<div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    
+  </div>
+</div>
+<div class="month-row" style="--lanes: 1;">
+  <div class="month-label">12月</div>
+  <div class="month-track">
+    <div class="date-line" style="--day: 1;"></div>
+<div class="date-line" style="--day: 2;"></div>
+<div class="date-line" style="--day: 3;"></div>
+<div class="date-line" style="--day: 4;"></div>
+<div class="date-line" style="--day: 5;"></div>
+<div class="date-line" style="--day: 6;"></div>
+<div class="date-line" style="--day: 7;"></div>
+<div class="date-line" style="--day: 8;"></div>
+<div class="date-line" style="--day: 9;"></div>
+<div class="date-line" style="--day: 10;"></div>
+<div class="date-line" style="--day: 11;"></div>
+<div class="date-line" style="--day: 12;"></div>
+<div class="date-line" style="--day: 13;"></div>
+<div class="date-line" style="--day: 14;"></div>
+<div class="date-line" style="--day: 15;"></div>
+<div class="date-line" style="--day: 16;"></div>
+<div class="date-line" style="--day: 17;"></div>
+<div class="date-line" style="--day: 18;"></div>
+<div class="date-line" style="--day: 19;"></div>
+<div class="date-line" style="--day: 20;"></div>
+<div class="date-line" style="--day: 21;"></div>
+<div class="date-line" style="--day: 22;"></div>
+<div class="date-line" style="--day: 23;"></div>
+<div class="date-line" style="--day: 24;"></div>
+<div class="date-line" style="--day: 25;"></div>
+<div class="date-line" style="--day: 26;"></div>
+<div class="date-line" style="--day: 27;"></div>
+<div class="date-line" style="--day: 28;"></div>
+<div class="date-line" style="--day: 29;"></div>
+<div class="date-line" style="--day: 30;"></div>
+<div class="date-line" style="--day: 31;"></div>
+<div class="date-line end-line"></div>
+    
+  </div>
+</div>
+      </div>
+    </section>
+    <section class="experiment-list">
+      <h2>实验列表</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>颜色</th>
+            <th>编号</th>
+            <th>类型</th>
+            <th>名称</th>
+            <th>负责人</th>
+            <th>起止日期</th>
+            <th>时长</th>
+            <th>备注</th>
+          </tr>
+        </thead>
+        <tbody><tr>
+  <td><span class="swatch" style="background: #F28E2B;"></span></td>
+  <td>EXP001</td>
+  <td>实验</td>
+  <td>番茄种植观察</td>
+  <td>张三</td>
+  <td>2026-06-01 至 2026-06-02</td>
+  <td>2 天</td>
+  <td>温室 2 号</td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #59A14F;"></span></td>
+  <td>EXP002</td>
+  <td>实验</td>
+  <td>面包发酵对比</td>
+  <td>李四</td>
+  <td>2026-06-03 至 2026-06-10</td>
+  <td>8 天</td>
+  <td></td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #59A14F;"></span></td>
+  <td>EXP003</td>
+  <td>实验</td>
+  <td>纸飞机飞行测试</td>
+  <td>王五/张三</td>
+  <td>2026-06-11 至 2026-06-15</td>
+  <td>5 天</td>
+  <td></td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #B0B0B0;"></span></td>
+  <td>MAINT001</td>
+  <td>维护</td>
+  <td>空调检修/线路整理/门窗更换</td>
+  <td>赵六</td>
+  <td>2026-06-16 至 2026-07-31</td>
+  <td>46 天</td>
+  <td></td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #76B7B2;"></span></td>
+  <td>EXP004</td>
+  <td>实验</td>
+  <td>咖啡萃取对比</td>
+  <td>李四/钱七</td>
+  <td>2026-08-01 至 2026-08-05</td>
+  <td>5 天</td>
+  <td></td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #EDC948;"></span></td>
+  <td>EXP005</td>
+  <td>实验</td>
+  <td>肥皂泡寿命测量</td>
+  <td>孙八</td>
+  <td>2026-08-06 至 2026-08-11</td>
+  <td>6 天</td>
+  <td>需要高速相机</td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #B07AA1;"></span></td>
+  <td>EXP006</td>
+  <td>实验</td>
+  <td>盆栽浇水周期</td>
+  <td>周九</td>
+  <td>2026-08-12 至 2026-08-23</td>
+  <td>12 天</td>
+  <td></td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #FF9DA7;"></span></td>
+  <td>EXP007</td>
+  <td>实验</td>
+  <td>风筝稳定性测试</td>
+  <td>吴十/郑十一</td>
+  <td>2026-08-24 至 2026-09-06</td>
+  <td>14 天</td>
+  <td></td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #9C755F;"></span></td>
+  <td>EXP008</td>
+  <td>实验</td>
+  <td>冰块融化速度</td>
+  <td>冯十二</td>
+  <td>2026-09-07 至 2026-09-20</td>
+  <td>14 天</td>
+  <td>需要预约场地</td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #BAB0AC;"></span></td>
+  <td>EXP009</td>
+  <td>实验</td>
+  <td>纸桥承重测试</td>
+  <td>陈十三</td>
+  <td>2026-09-21 至 2026-09-30</td>
+  <td>10 天</td>
+  <td>需要预约场地</td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #4E79A7;"></span></td>
+  <td>EXP010</td>
+  <td>实验</td>
+  <td>回形针磁化观察</td>
+  <td>张三</td>
+  <td>2026-10-09 至 2026-10-17</td>
+  <td>9 天</td>
+  <td></td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #59A14F;"></span></td>
+  <td>EXP011</td>
+  <td>实验</td>
+  <td>雨水收集统计</td>
+  <td>褚十四/冯十二</td>
+  <td>2026-10-18 至 2026-10-25</td>
+  <td>8 天</td>
+  <td>需要预约场地</td>
+</tr>
+<tr>
+  <td><span class="swatch" style="background: #E15759;"></span></td>
+  <td>EXP012</td>
+  <td>实验</td>
+  <td>蚂蚁路径记录</td>
+  <td>冯十二</td>
+  <td>2026-10-26 至 2026-10-31</td>
+  <td>6 天</td>
+  <td></td>
+</tr></tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

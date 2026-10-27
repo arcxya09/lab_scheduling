@@ -1,0 +1,107 @@
+[
+  {
+    "input": null,
+    "issues": [
+      "年份必须在 1900 到 2200 之间",
+      "标题不能为空",
+      "items 必须是数组"
+    ]
+  },
+  {
+    "input": [],
+    "issues": [
+      "年份必须在 1900 到 2200 之间",
+      "标题不能为空",
+      "items 必须是数组"
+    ]
+  },
+  {
+    "input": {
+      "year": 1800,
+      "title": "",
+      "settings": {
+        "page_size": "B5",
+        "orientation": "up"
+      },
+      "items": {}
+    },
+    "issues": [
+      "年份必须在 1900 到 2200 之间",
+      "标题不能为空",
+      "页面大小只能是 A3 或 A4",
+      "方向只能是 landscape 或 portrait",
+      "items 必须是数组"
+    ]
+  },
+  {
+    "input": {
+      "year": 2026.5,
+      "title": "  ",
+      "items": []
+    },
+    "issues": [
+      "年份必须在 1900 到 2200 之间",
+      "标题不能为空"
+    ]
+  },
+  {
+    "input": {
+      "year": 2026,
+      "title": "坏数据",
+      "items": [
+        null,
+        {
+          "id": "A",
+          "type": "repair",
+          "name": "",
+          "start_date": "2026-02-30",
+          "end_date": "2026-13-01",
+          "color": "orange"
+        },
+        {
+          "id": "A",
+          "type": " maintenance ",
+          "name": "x",
+          "start_date": "2026-05-02",
+          "end_date": "2026-05-01",
+          "color": "#12345"
+        },
+        {
+          "id": " ",
+          "type": "experiment",
+          "name": "y",
+          "start_date": "0050-01-01",
+          "end_date": "2026-1-1"
+        },
+        {
+          "id": 0,
+          "type": "experiment",
+          "name": "z",
+          "start_date": 20260101,
+          "end_date": "2026-01-02",
+          "color": "#ABCDEF"
+        }
+      ]
+    },
+    "issues": [
+      "第 1 项 缺少编号",
+      "第 1 项 类型无效",
+      "第 1 项 缺少名称",
+      "第 1 项 开始日期无效",
+      "第 1 项 结束日期无效",
+      "A 类型无效",
+      "A 缺少名称",
+      "A 开始日期无效",
+      "A 结束日期无效",
+      "A 颜色格式应为 #RRGGBB",
+      "A 编号重复",
+      "A 开始日期晚于结束日期",
+      "A 颜色格式应为 #RRGGBB",
+      "  缺少编号",
+      "  开始日期无效",
+      "  结束日期无效",
+      "第 5 项 缺少编号",
+      "第 5 项 开始日期无效"
+    ]
+  }
+]

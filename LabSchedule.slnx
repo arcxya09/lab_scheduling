@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LabSchedule.App/LabSchedule.App.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/LabSchedule.Core/LabSchedule.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LabSchedule.Core.Tests/LabSchedule.Core.Tests.csproj" />
+  </Folder>
+</Solution>

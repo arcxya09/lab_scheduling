@@ -1,0 +1,33 @@
+{
+  "year": "2028",
+  "title": 2028,
+  "settings": {
+    "show_weekends": 1
+  },
+  "items": [
+    {
+      "id": 7,
+      "type": "experiment",
+      "name": "闰日",
+      "leader": "李",
+      "start_date": "2028-02-28",
+      "end_date": "2028-03-01",
+      "color": "#000000"
+    },
+    {
+      "id": "B",
+      "type": "experiment",
+      "name": "无色一",
+      "start_date": "2028-05-01",
+      "end_date": "2028-05-31"
+    },
+    {
+      "id": "C",
+      "type": "experiment",
+      "name": "无色二",
+      "start_date": "2028-05-01",
+      "end_date": "2028-05-31",
+      "color": null
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "year": 2026,
+  "title": "跨年测试",
+  "settings": {
+    "page_size": "A4",
+    "orientation": "landscape"
+  },
+  "items": [
+    {
+      "id": "CROSS",
+      "type": "experiment",
+      "name": "跨年实验",
+      "start_date": "2025-12-20",
+      "end_date": "2026-01-10"
+    },
+    {
+      "id": "OUT",
+      "type": "experiment",
+      "name": "外部实验",
+      "start_date": "2025-01-01",
+      "end_date": "2025-01-02"
+    },
+    {
+      "id": "TAIL",
+      "type": "maintenance",
+      "name": "年末维护",
+      "leader": "张",
+      "start_date": "2026-12-28",
+      "end_date": "2027-01-03"
+    }
+  ]
+}
