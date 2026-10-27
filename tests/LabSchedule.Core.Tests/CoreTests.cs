@@ -154,7 +154,7 @@ public class CoreTests
         var schedule = ScheduleRules.PrepareSchedule(Sample());
         var log = ScheduleStore.BuildRenderLog("C:\\out\\a.pdf", "C:\\out\\a.html", schedule, [], new DateTime(2026, 10, 27, 12, 0, 0, 123, DateTimeKind.Utc));
         Assert.Equal(
-            "Experiment Schedule Render Log\nApp version: 3.0.0\nGenerated at: 2026-10-27T12:00:00.123Z\nTitle: 2026年度示例实验安排\nYear: 2026\n" +
+            $"Experiment Schedule Render Log\nApp version: {ScheduleStore.AppVersion}\nGenerated at: 2026-10-27T12:00:00.123Z\nTitle: 2026年度示例实验安排\nYear: 2026\n" +
             "PDF: C:\\out\\a.pdf\nHTML: C:\\out\\a.html\nPage: A4 landscape\nItems rendered: 13\n\nWarnings:\n- none\n",
             log);
         Assert.Equal("C:\\out\\a_render_log.txt", ScheduleStore.RenderLogPath("C:\\out\\a.pdf"));

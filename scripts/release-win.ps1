@@ -37,7 +37,7 @@ finally {
 }
 
 # Installer: WiX v5 MSI built from the same folder.
-dotnet build (Join-Path $root "installer\LabSchedule.Installer.wixproj") -c Release `
+dotnet build (Join-Path $root "installer\LabSchedule.Installer.wixproj") --no-incremental -c Release `
     "-p:PublishDir=$publishDir\" "-p:ProductVersion=$version" "-p:OutputPath=$releaseDir\"
 if ($LASTEXITCODE -ne 0) { throw "installer build failed" }
 Get-ChildItem $releaseDir -Filter *.wixpdb | Remove-Item -Force

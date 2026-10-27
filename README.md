@@ -20,6 +20,14 @@
 两者都自带 .NET 运行时和 Windows App SDK，支持 Windows 10 1809 及以上 / Windows 11 x64。
 生成 PDF 需要 Microsoft Edge WebView2 运行时（Windows 11 自带）。
 
+## 自动更新与设置
+
+- 程序启动时会检查 GitHub 上的最新 Release，有新版本时在窗口顶部提示。点"立即更新"后下载对应文件
+  （安装版下载 msi，便携版下载 zip），校验大小和 SHA-256，然后关闭程序、安装更新并自动重新打开。
+  安装版是否为安装版由安装包写入的 `HKCU\Software\LabSchedule\InstallFolder` 判断。
+- 命令栏右侧的"设置"可以切换主题、设置"联动后续安排"的默认状态、更改默认输出文件夹、开关自动检查更新。
+  设置保存在 `%LocalAppData%\LabSchedule\settings.json`；程序崩溃时详细信息写入同目录的 `crash.log`。
+
 ## 目录
 
 ```text
@@ -68,5 +76,14 @@ powershell -ExecutionPolicy Bypass -File scripts/release-win.ps1
 - `导出 JSON`：弹出保存对话框，可选择自定义文件夹和文件名。
 - 列表、PDF 实验列表、保存/导出的 JSON 均按开始日期自动排序并重新编号。
 
-开发时可设置环境变量 `LAB_SCHEDULE_OUTPUT_DIR` 把默认输出目录换到别处，避免测试时改动真实数据；
-Debug 版还支持 `LAB_SCHEDULE_THEME=Dark|Light` 强制深浅色。
+## 测试用环境变量
+
+开发和测试时可用以下环境变量，避免改动真实数据或真实安装：
+
+| 变量 | 作用 |
+| --- | --- |
+| `LAB_SCHEDULE_OUTPUT_DIR` | 替换默认输出文件夹 |
+| `LAB_SCHEDULE_SETTINGS_FILE` | 替换设置文件位置 |
+| `LAB_SCHEDULE_UPDATE_FEED` | 替换更新检查地址（指向一个与 GitHub "latest release" 格式相同的 JSON）；Debug 版只有设置了它才会自动检查更新 |
+| `LAB_SCHEDULE_REGISTRY_KEY` | 替换安装版注册表键，配合安装包的 `-p:AppRegistryKey=... -p:UpgradeCode=... -p:ProductTitle=...` 构建独立的测试安装 |
+| `LAB_SCHEDULE_THEME` | 仅 Debug 版：`Dark` / `Light` 强制深浅色 |

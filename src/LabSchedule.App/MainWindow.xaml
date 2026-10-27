@@ -15,13 +15,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!-- Hidden WebView2 host used to print PDFs, kept behind the workbench. -->
         <Grid
             x:Name="PrintHost"
-            Grid.RowSpan="3"
+            Grid.RowSpan="4"
             Width="1200"
             Height="900"
             HorizontalAlignment="Left"
@@ -44,7 +45,7 @@
         </Grid>
 
         <!-- Application command bar -->
-        <Grid Grid.Row="1" Padding="8,0,16,4" ColumnSpacing="12">
+        <Grid x:Name="CommandArea" Grid.Row="1" Padding="8,0,16,4" ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -99,6 +100,12 @@
                         </StackPanel>
                     </Button>
                 </AppBarElementContainer>
+                <AppBarSeparator />
+                <AppBarButton x:Name="SettingsButton" Click="SettingsButton_Click" Label="设置" ToolTipService.ToolTip="设置">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE713;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
             </CommandBar>
 
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" Spacing="10">
@@ -117,8 +124,28 @@
             </StackPanel>
         </Grid>
 
+        <!-- "发现新版本" bar -->
+        <InfoBar
+            x:Name="UpdateBar"
+            Grid.Row="2"
+            Margin="8,0,8,8"
+            CloseButtonClick="UpdateBar_CloseButtonClick"
+            IsClosable="True"
+            IsOpen="False"
+            Severity="Informational">
+            <InfoBar.ActionButton>
+                <Button x:Name="UpdateActionButton" Click="UpdateActionButton_Click" Content="立即更新" />
+            </InfoBar.ActionButton>
+            <InfoBar.Content>
+                <StackPanel Margin="0,0,0,12" Spacing="8">
+                    <ProgressBar x:Name="UpdateProgress" Maximum="100" Visibility="Collapsed" />
+                    <HyperlinkButton x:Name="UpdateNotesLink" Padding="0" Content="查看更新说明" />
+                </StackPanel>
+            </InfoBar.Content>
+        </InfoBar>
+
         <!-- Workbench -->
-        <Grid Grid.Row="2" Margin="8,0,8,8" ColumnSpacing="8">
+        <Grid x:Name="Workbench" Grid.Row="3" Margin="8,0,8,8" ColumnSpacing="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="420" />
                 <ColumnDefinition Width="390" />
@@ -127,11 +154,15 @@
             <!-- Left: settings, toolbar, calendar and list -->
             <Border Style="{StaticResource CardStyle}">
                 <Grid>
+                    <!--
+                      The calendar and the list share the remaining height. Both rows are star-sized so
+                      the list shrinks with the window instead of being pushed past the card's edge.
+                    -->
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" MinHeight="320" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="2*" MinHeight="200" />
+                        <RowDefinition Height="*" MinHeight="120" MaxHeight="260" />
                     </Grid.RowDefinitions>
 
                     <Grid Padding="14" ColumnSpacing="10" RowSpacing="12">
@@ -217,7 +248,7 @@
                     <timeline:TimelineView x:Name="TimelinePanel" Grid.Row="2" />
 
                     <!-- Item list -->
-                    <Grid Grid.Row="3" MaxHeight="260" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+                    <Grid Grid.Row="3" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
@@ -429,7 +460,160 @@
             </Border>
         </Grid>
 
+        <!-- Settings page; replaces the command bar and workbench while open. -->
+        <ScrollViewer x:Name="SettingsPanel" Grid.Row="1" Grid.RowSpan="3" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+            <StackPanel MaxWidth="1000" Margin="32,4,32,32" Spacing="4">
+                <StackPanel Margin="0,0,0,16" Orientation="Horizontal" Spacing="8">
+                    <Button
+                        x:Name="SettingsBackButton"
+                        AutomationProperties.Name="返回"
+                        Click="SettingsBackButton_Click"
+                        Style="{StaticResource NavigationBackButtonNormalStyle}"
+                        ToolTipService.ToolTip="返回 (Esc)" />
+                    <TextBlock VerticalAlignment="Center" Style="{StaticResource TitleTextBlockStyle}" Text="设置" />
+                </StackPanel>
+
+                <TextBlock Style="{StaticResource SettingsSectionStyle}" Text="外观" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE790;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="应用主题" />
+                            <TextBlock Style="{StaticResource SettingsDescriptionStyle}" Text="选择浅色或深色，或者跟随 Windows 的设置" />
+                        </StackPanel>
+                        <ComboBox
+                            x:Name="ThemeSetting"
+                            Grid.Column="2"
+                            MinWidth="160"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="应用主题"
+                            SelectionChanged="ThemeSetting_SelectionChanged">
+                            <ComboBoxItem Content="跟随系统" Tag="system" />
+                            <ComboBoxItem Content="浅色" Tag="light" />
+                            <ComboBoxItem Content="深色" Tag="dark" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsSectionStyle}" Text="编辑" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE8AB;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="默认开启“联动后续安排”" />
+                            <TextBlock Style="{StaticResource SettingsDescriptionStyle}" Text="打开程序时该选项的初始状态。开启后，修改结束日期或插入安排时，后面的安排会一起平移" />
+                        </StackPanel>
+                        <ToggleSwitch
+                            x:Name="CascadeSetting"
+                            Grid.Column="2"
+                            MinWidth="0"
+                            AutomationProperties.Name="默认开启联动后续安排"
+                            OffContent="关"
+                            OnContent="开"
+                            Toggled="CascadeSetting_Toggled" />
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsSectionStyle}" Text="文件" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE8B7;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="默认输出文件夹" />
+                            <TextBlock Style="{StaticResource SettingsDescriptionStyle}" Text="“保存 JSON”写入这里的 default_schedule.json，启动时也从这里加载；新生成的 PDF/HTML 默认也放在这里" />
+                            <TextBlock
+                                x:Name="OutputDirText"
+                                Margin="0,4,0,0"
+                                IsTextSelectionEnabled="True"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
+                            <Button x:Name="ChangeOutputDirButton" Click="ChangeOutputDirButton_Click" Content="更改…" />
+                            <Button x:Name="OpenOutputDirButton" Click="OpenOutputDirButton_Click" Content="打开" />
+                            <Button x:Name="ResetOutputDirButton" Click="ResetOutputDirButton_Click" Content="恢复默认" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsSectionStyle}" Text="更新" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE895;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="启动时自动检查更新" />
+                            <TextBlock Style="{StaticResource SettingsDescriptionStyle}" Text="有新版本时在窗口顶部提示，确认后自动下载并安装" />
+                        </StackPanel>
+                        <ToggleSwitch
+                            x:Name="UpdateCheckSetting"
+                            Grid.Column="2"
+                            MinWidth="0"
+                            AutomationProperties.Name="启动时自动检查更新"
+                            OffContent="关"
+                            OnContent="开"
+                            Toggled="UpdateCheckSetting_Toggled" />
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE72C;" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="CurrentVersionText" Text="当前版本" />
+                            <TextBlock x:Name="UpdateStatusText" Style="{StaticResource SettingsDescriptionStyle}" Text="从 GitHub 获取最新版本信息" />
+                        </StackPanel>
+                        <Button x:Name="CheckUpdatesButton" Grid.Column="2" VerticalAlignment="Center" Click="CheckUpdatesButton_Click" Content="检查更新" />
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsSectionStyle}" Text="关于" />
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Image Width="32" Height="32" Source="ms-appx:///Assets/AppIcon.png" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="实验排班生成器" />
+                            <TextBlock x:Name="AboutText" Style="{StaticResource SettingsDescriptionStyle}" />
+                        </StackPanel>
+                        <HyperlinkButton
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Content="GitHub 项目主页"
+                            NavigateUri="https://github.com/arcxya09/lab_scheduling" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
         <!-- Floating drag feedback (ghost bar and tooltip) is drawn here, above everything. -->
-        <Canvas x:Name="OverlayCanvas" Grid.RowSpan="3" IsHitTestVisible="False" />
+        <Canvas x:Name="OverlayCanvas" Grid.RowSpan="4" IsHitTestVisible="False" />
     </Grid>
 </Window>

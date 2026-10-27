@@ -140,7 +140,7 @@ public sealed partial class TimelineView : UserControl
         if (_schedule is null || _drag is not null) return;
         _frame.Background = ThemeColors.Brush(this, "TimelineSurface");
         _frame.BorderBrush = ThemeColors.Brush(this, "TimelineBorder");
-        _horizontalScroll.Background = ThemeColors.System("CardBackgroundFillColorSecondaryBrush");
+        _horizontalScroll.Background = ThemeColors.Brush(this, "TimelineCanvasBackground");
         BuildHeader();
 
         _activeBar = null;
@@ -532,7 +532,7 @@ public sealed partial class TimelineView : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             Foreground = resizing
                 ? ThemeColors.Brush(this, "ResizePreviewText")
-                : ThemeColors.System("AccentTextFillColorPrimaryBrush")
+                : ThemeColors.Brush(this, "MovePreviewText")
         };
         drag.Preview = new Border
         {

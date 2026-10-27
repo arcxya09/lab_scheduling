@@ -17,21 +17,26 @@ public sealed record StoreResult<T>(T? Value, string? Error)
 /// <summary>File handling that used to live in the Electron main process.</summary>
 public static class ScheduleStore
 {
-    public const string AppVersion = "3.0.0";
+    public static string AppVersion { get; set; } = "3.1.0";
 
     /// <summary>Overrides the output folder (used by tests so they never touch Documents).</summary>
     public const string OutputDirEnvironmentVariable = "LAB_SCHEDULE_OUTPUT_DIR";
 
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
+    /// <summary>The folder chosen on the settings page; null for the standard Documents folder.</summary>
+    public static string? OutputDirSetting { get; set; }
+
+    public static string StandardOutputDir =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "实验排班输出");
+
     public static string DefaultOutputDir
     {
         get
         {
             var overrideDir = Environment.GetEnvironmentVariable(OutputDirEnvironmentVariable);
-            return string.IsNullOrWhiteSpace(overrideDir)
-                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "实验排班输出")
-                : overrideDir;
+            if (!string.IsNullOrWhiteSpace(overrideDir)) return overrideDir;
+            return string.IsNullOrWhiteSpace(OutputDirSetting) ? StandardOutputDir : OutputDirSetting;
         }
     }
 

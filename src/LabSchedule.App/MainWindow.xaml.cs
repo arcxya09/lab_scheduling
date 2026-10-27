@@ -47,12 +47,18 @@ public sealed partial class MainWindow : Window
     private bool _hasSavedDefault;
     private bool _generating;
     private int _rendering;
+    private StatusKind _statusKind;
+    private readonly AppSettings _settings = AppSettings.Load(AppSettings.DefaultFilePath);
 
     public MainWindow()
     {
         InitializeComponent();
         _hwnd = WindowNative.GetWindowHandle(this);
         SetupWindow();
+        ScheduleStore.AppVersion = Updater.CurrentVersion.ToString();
+        ScheduleStore.OutputDirSetting = _settings.OutputDir;
+        _cascadeUpdates = _settings.CascadeByDefault;
+        ApplyTheme(_settings.Theme);
 
         YearInput.NumberFormatter = new DecimalFormatter
         {
@@ -77,6 +83,7 @@ public sealed partial class MainWindow : Window
         {
             UpdateCaptionButtons();
             UpdateDirtyState();
+            ApplyStatusColor();
         };
         RootGrid.Loaded += (_, _) => UpdateCaptionButtons();
 
@@ -85,6 +92,8 @@ public sealed partial class MainWindow : Window
         _statusTimer.Tick += (_, _) => ShowIssues();
 
         Boot();
+        InitializeSettingsPage();
+        AnnounceUpdateAndCheck();
     }
 
     // ---- window ----------------------------------------------------------------------------------
@@ -292,8 +301,8 @@ public sealed partial class MainWindow : Window
     {
         var dirty = !_hasSavedDefault || _savedFingerprint != Fingerprint();
         DirtyText.Text = dirty ? "未保存" : "已保存";
-        DirtyBadge.Background = (Brush)Application.Current.Resources[dirty ? "SystemFillColorCautionBackgroundBrush" : "SystemFillColorSuccessBackgroundBrush"];
-        DirtyText.Foreground = (Brush)Application.Current.Resources[dirty ? "SystemFillColorCautionBrush" : "SystemFillColorSuccessBrush"];
+        DirtyBadge.Background = ThemeColors.System(RootGrid, dirty ? "SystemFillColorCautionBackgroundBrush" : "SystemFillColorSuccessBackgroundBrush");
+        DirtyText.Foreground = ThemeColors.System(RootGrid, dirty ? "SystemFillColorCautionBrush" : "SystemFillColorSuccessBrush");
         if (RootGrid.ActualTheme == ElementTheme.Light)
         {
             // The caution/success fills are too light to read as text on light backgrounds.
@@ -447,20 +456,24 @@ public sealed partial class MainWindow : Window
     private void SetStatus(string message, StatusKind kind = StatusKind.Normal, int timeoutMs = 3000)
     {
         _statusTimer.Stop();
+        _statusKind = kind;
         StatusText.Text = message;
         ToolTipService.SetToolTip(StatusText, message);
-        StatusText.Foreground = (Brush)Application.Current.Resources[kind switch
-        {
-            StatusKind.Error => "SystemFillColorCriticalBrush",
-            StatusKind.Ok => "SystemFillColorSuccessBrush",
-            _ => "TextFillColorSecondaryBrush"
-        }];
+        ApplyStatusColor();
         if (timeoutMs > 0)
         {
             _statusTimer.Interval = TimeSpan.FromMilliseconds(timeoutMs);
             _statusTimer.Start();
         }
     }
+
+    private void ApplyStatusColor() =>
+        StatusText.Foreground = ThemeColors.System(RootGrid, _statusKind switch
+        {
+            StatusKind.Error => "SystemFillColorCriticalBrush",
+            StatusKind.Ok => "SystemFillColorSuccessBrush",
+            _ => "TextFillColorSecondaryBrush"
+        });
 
     // ---- configuration panel ---------------------------------------------------------------------
 
@@ -696,6 +709,15 @@ public sealed partial class MainWindow : Window
     private void RootGrid_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         static bool IsDown(VirtualKey key) => InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
+        if (IsSettingsOpen)
+        {
+            if (e.Key == VirtualKey.Escape)
+            {
+                e.Handled = true;
+                CloseSettings();
+            }
+            return;
+        }
         if (!IsDown(VirtualKey.Control) || IsDown(VirtualKey.Menu) || TimelinePanel.IsDragging) return;
         if (e.Key == VirtualKey.Z && IsDown(VirtualKey.Shift))
         {

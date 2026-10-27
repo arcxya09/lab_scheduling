@@ -12,7 +12,11 @@
     <Cultures>zh-CN</Cultures>
     <!-- Some Windows App SDK DLLs list many languages in their version info, which ICE03 rejects. -->
     <SuppressIces>ICE03</SuppressIces>
-    <DefineConstants>PublishDir=$(PublishDir);ProductVersion=$(ProductVersion);IconPath=$(MSBuildThisFileDirectory)..\src\LabSchedule.App\Assets\AppIcon.ico</DefineConstants>
+    <!-- Overridable so a separate test install can be built that never touches a real installation. -->
+    <ProductTitle Condition="'$(ProductTitle)' == ''">实验排班生成器</ProductTitle>
+    <UpgradeCode Condition="'$(UpgradeCode)' == ''">34041771-FA96-4954-9271-4768194D3A9B</UpgradeCode>
+    <AppRegistryKey Condition="'$(AppRegistryKey)' == ''">Software\LabSchedule</AppRegistryKey>
+    <DefineConstants>PublishDir=$(PublishDir);ProductVersion=$(ProductVersion);ProductTitle=$(ProductTitle);UpgradeCode=$(UpgradeCode);AppRegistryKey=$(AppRegistryKey);IconPath=$(MSBuildThisFileDirectory)..\src\LabSchedule.App\Assets\AppIcon.ico</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -12,6 +12,8 @@
             <!-- Calendar colours. Read from code (Timeline/TimelineBrushes.cs), keyed by theme. -->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
+                    <Color x:Key="TimelineCanvasBackground">#80F6F6F6</Color>
+                    <Color x:Key="MovePreviewText">#FF0B3F3A</Color>
                     <Color x:Key="TimelineHeaderBackground">#FF223033</Color>
                     <Color x:Key="TimelineHeaderForeground">#FFFFFFFF</Color>
                     <Color x:Key="TimelineHeaderDivider">#24FFFFFF</Color>
@@ -32,6 +34,8 @@
                     <Color x:Key="ResizePreviewText">#FF6B3D00</Color>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
+                    <Color x:Key="TimelineCanvasBackground">#08FFFFFF</Color>
+                    <Color x:Key="MovePreviewText">#FFC8F5EF</Color>
                     <Color x:Key="TimelineHeaderBackground">#FF1B2527</Color>
                     <Color x:Key="TimelineHeaderForeground">#FFE6EEEE</Color>
                     <Color x:Key="TimelineHeaderDivider">#1FFFFFFF</Color>
@@ -77,6 +81,25 @@
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                 <Setter Property="TextWrapping" Value="NoWrap" />
+            </Style>
+
+            <!-- Settings page cards, in the style of the Windows Settings app. -->
+            <Style x:Key="SettingsCardStyle" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+                <Setter Property="Padding" Value="16,12" />
+                <Setter Property="MinHeight" Value="68" />
+            </Style>
+
+            <Style x:Key="SettingsSectionStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyStrongTextBlockStyle}">
+                <Setter Property="Margin" Value="1,24,0,6" />
+            </Style>
+
+            <Style x:Key="SettingsDescriptionStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Setter Property="TextWrapping" Value="Wrap" />
             </Style>
 
             <!-- Destructive button: the original "删除" button was red. -->
