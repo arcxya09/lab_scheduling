@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:LabSchedule"
     xmlns:timeline="using:LabSchedule.Timeline"
+    xmlns:controls="using:LabSchedule.Controls"
     Title="实验排班生成器">
 
     <Window.SystemBackdrop>
@@ -145,24 +146,30 @@
         </InfoBar>
 
         <!-- Workbench -->
-        <Grid x:Name="Workbench" Grid.Row="3" Margin="8,0,8,8" ColumnSpacing="8">
+        <Grid x:Name="Workbench" Grid.Row="3" Margin="8,0,8,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="420" />
-                <ColumnDefinition Width="390" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition x:Name="EditorColumn" Width="390" />
             </Grid.ColumnDefinitions>
+
+            <!-- Drag to change the editor panel's width (MainWindow.Layout.cs). -->
+            <controls:SplitterBar x:Name="EditorSplitter" Grid.Column="1" Orientation="Vertical" />
 
             <!-- Left: settings, toolbar, calendar and list -->
             <Border Style="{StaticResource CardStyle}">
                 <Grid>
                     <!--
                       The calendar and the list share the remaining height. Both rows are star-sized so
-                      the list shrinks with the window instead of being pushed past the card's edge.
+                      the list never gets pushed past the card's edge; the splitter between them changes
+                      their proportions.
                     -->
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="2*" MinHeight="200" />
-                        <RowDefinition Height="*" MinHeight="120" MaxHeight="260" />
+                        <RowDefinition x:Name="TimelineRow" Height="2*" MinHeight="160" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition x:Name="ListRow" Height="*" MinHeight="96" />
                     </Grid.RowDefinitions>
 
                     <Grid Padding="14" ColumnSpacing="10" RowSpacing="12">
@@ -248,7 +255,9 @@
                     <timeline:TimelineView x:Name="TimelinePanel" Grid.Row="2" />
 
                     <!-- Item list -->
-                    <Grid Grid.Row="3" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+                    <controls:SplitterBar x:Name="ListSplitter" Grid.Row="3" Height="9" Orientation="Horizontal" />
+
+                    <Grid Grid.Row="4">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
@@ -318,7 +327,7 @@
             </Border>
 
             <!-- Right: activity editor and output paths -->
-            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+            <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                 <ScrollViewer Padding="16,12,16,16" VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="12">
                         <Grid Padding="0,0,0,10" BorderBrush="{ThemeResource TextFillColorPrimaryBrush}" BorderThickness="0,0,0,2">

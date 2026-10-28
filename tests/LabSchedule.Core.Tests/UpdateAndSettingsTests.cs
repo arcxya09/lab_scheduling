@@ -81,6 +81,42 @@ public class UpdateAndSettingsTests
     }
 
     [Fact]
+    public void SplitterSizesStayWithinLimits()
+    {
+        Assert.Equal(500, PaneLayout.ClampEditorWidth(500, 1400));
+        Assert.Equal(PaneLayout.MinEditorWidth, PaneLayout.ClampEditorWidth(100, 1400));
+        Assert.Equal(1400 - PaneLayout.MinLeftWidth - PaneLayout.SplitterSize, PaneLayout.ClampEditorWidth(2000, 1400));
+        Assert.Equal(PaneLayout.MinEditorWidth, PaneLayout.ClampEditorWidth(500, 600));
+        Assert.Equal(PaneLayout.DefaultEditorWidth, PaneLayout.ClampEditorWidth(double.NaN, 1400));
+
+        Assert.Equal(200, PaneLayout.ClampListHeight(200, 600));
+        Assert.Equal(PaneLayout.MinListHeight, PaneLayout.ClampListHeight(10, 600));
+        Assert.Equal(600 - PaneLayout.MinTimelineHeight, PaneLayout.ClampListHeight(590, 600));
+
+        Assert.Equal(0.4, PaneLayout.NormalizeListRatio(0.4));
+        Assert.Equal(PaneLayout.DefaultListRatio, PaneLayout.NormalizeListRatio(null));
+        Assert.Equal(PaneLayout.DefaultListRatio, PaneLayout.NormalizeListRatio(1.5));
+    }
+
+    [Fact]
+    public void SplitterSizesAreSaved()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "lab-schedule-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var path = Path.Combine(dir, "settings.json");
+            new AppSettings { EditorPanelWidth = 455.5, ListPaneRatio = 0.42 }.Save(path);
+            var loaded = AppSettings.Load(path);
+            Assert.Equal(455.5, loaded.EditorPanelWidth);
+            Assert.Equal(0.42, loaded.ListPaneRatio);
+        }
+        finally
+        {
+            if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
+        }
+    }
+
+    [Fact]
     public void OutputFolderSettingChangesDefaultPaths()
     {
         var previous = Environment.GetEnvironmentVariable(ScheduleStore.OutputDirEnvironmentVariable);

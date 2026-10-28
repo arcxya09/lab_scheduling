@@ -32,6 +32,12 @@ public sealed class AppSettings
     /// <summary>Version that last ran, so the first start after an update can say so.</summary>
     public string? LastRunVersion { get; set; }
 
+    /// <summary>Width of the right-hand editor panel set with the splitter; null for the default.</summary>
+    public double? EditorPanelWidth { get; set; }
+
+    /// <summary>Share of the calendar + list height given to the list; null for the default.</summary>
+    public double? ListPaneRatio { get; set; }
+
     /// <summary>Overrides where settings are kept (used by tests so they never touch the real settings).</summary>
     public const string FileEnvironmentVariable = "LAB_SCHEDULE_SETTINGS_FILE";
 

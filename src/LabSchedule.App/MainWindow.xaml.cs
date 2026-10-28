@@ -91,6 +91,7 @@ public sealed partial class MainWindow : Window
         _statusTimer.IsRepeating = false;
         _statusTimer.Tick += (_, _) => ShowIssues();
 
+        InitializeLayout();
         Boot();
         InitializeSettingsPage();
         AnnounceUpdateAndCheck();
