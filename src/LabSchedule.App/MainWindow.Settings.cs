@@ -105,7 +105,11 @@ public sealed partial class MainWindow
     private void RenderOutputDir()
     {
         var custom = !string.IsNullOrWhiteSpace(_settings.OutputDir);
+        var outputs = ScheduleStore.DefaultPaths(_schedule);
         OutputDirText.Text = ScheduleStore.DefaultOutputDir + (custom ? "" : "（默认）");
+        OutputFilesText.Text =
+            $"保存 JSON：{Path.GetFileName(outputs.JsonPath)}（启动时自动加载）\n" +
+            $"生成 PDF：{Path.GetFileName(outputs.PdfPath)}、{Path.GetFileName(outputs.HtmlPath)} 和生成日志（按排班年份命名，已有同名文件会被覆盖）";
         ResetOutputDirButton.IsEnabled = custom;
     }
 
@@ -134,25 +138,15 @@ public sealed partial class MainWindow
         }
     }
 
-    /// <summary>
-    /// Switches the default output folder. Paths that still pointed at the old default follow it;
-    /// paths the user typed in themselves are left alone.
-    /// </summary>
+    /// <summary>Switches the output folder used for saving, generating and "打开输出目录".</summary>
     private void ChangeOutputDir(string? folder)
     {
-        var before = ScheduleStore.DefaultPaths(_schedule);
         _settings.OutputDir = string.IsNullOrWhiteSpace(folder) ? null : folder;
         ScheduleStore.OutputDirSetting = _settings.OutputDir;
         SaveSettings();
 
         var after = ScheduleStore.DefaultPaths(_schedule);
-        if (string.Equals(_paths.PdfPath, before.PdfPath, StringComparison.OrdinalIgnoreCase)) _paths.PdfPath = after.PdfPath;
-        if (string.Equals(_paths.HtmlPath, before.HtmlPath, StringComparison.OrdinalIgnoreCase)) _paths.HtmlPath = after.HtmlPath;
-        _paths.JsonPath = after.JsonPath;
-        RecordHistory("更改输出文件夹");
-        RenderPaths();
         RenderOutputDir();
-        UpdateButtons();
         SetStatus(File.Exists(after.JsonPath)
             ? $"默认输出文件夹已改为：{ScheduleStore.DefaultOutputDir}"
             : $"默认输出文件夹已改为：{ScheduleStore.DefaultOutputDir}。请点“保存 JSON”把当前排班保存到新位置", StatusKind.Ok, 9000);

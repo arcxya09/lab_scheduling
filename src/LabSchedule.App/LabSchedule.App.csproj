@@ -22,7 +22,7 @@
     <Product>实验排班生成器</Product>
     <AssemblyTitle>实验排班生成器</AssemblyTitle>
     <Description>编辑年度实验/维护安排并生成可打印的 HTML/PDF 日历。</Description>
-    <Version>3.2.0</Version>
+    <Version>3.3.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

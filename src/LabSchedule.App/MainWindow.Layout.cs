@@ -1,5 +1,6 @@
 using LabSchedule.Core;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace LabSchedule;
 
@@ -18,6 +19,7 @@ public sealed partial class MainWindow
         _listRatio = PaneLayout.NormalizeListRatio(_settings.ListPaneRatio);
         ApplyListRatio();
         Workbench.SizeChanged += (_, _) => ApplyEditorWidth();
+        ActionsRow.SizeChanged += (_, _) => ArrangeActionsRow();
 
         EditorSplitter.DragStarted += (_, _) => _dragStartEditorWidth = EditorColumn.ActualWidth;
         EditorSplitter.Dragging += (_, delta) =>
@@ -53,6 +55,19 @@ public sealed partial class MainWindow
             ApplyListRatio();
             SaveLayout();
         };
+    }
+
+    /// <summary>Keeps the item buttons beside the check boxes, or below them when there is no room.</summary>
+    private void ArrangeActionsRow()
+    {
+        var unlimited = new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity);
+        OptionsPanel.Measure(unlimited);
+        ItemButtonsPanel.Measure(unlimited);
+        var wrap = OptionsPanel.DesiredSize.Width + ActionsRow.ColumnSpacing + ItemButtonsPanel.DesiredSize.Width > ActionsRow.ActualWidth;
+        if (Grid.GetRow(ItemButtonsPanel) == (wrap ? 1 : 0)) return;
+        Grid.SetRow(ItemButtonsPanel, wrap ? 1 : 0);
+        Grid.SetColumn(ItemButtonsPanel, wrap ? 0 : 1);
+        ItemButtonsPanel.HorizontalAlignment = wrap ? HorizontalAlignment.Left : HorizontalAlignment.Right;
     }
 
     /// <summary>Applies the chosen width, narrowed when the window is too small for it.</summary>

@@ -71,10 +71,14 @@ powershell -ExecutionPolicy Bypass -File scripts/release-win.ps1
 3. Actions 会在 Windows 上运行测试、打包便携版和安装版，并创建 Release 上传这两个文件。
    也可以在 Actions 页面手动运行 "Release"，输入标签名。
 
-## JSON 保存规则
+## 输出文件
 
-- `保存 JSON`：写入默认文件 `文档/实验排班输出/default_schedule.json`，程序启动时自动加载它。
-- `导出 JSON`：弹出保存对话框，可选择自定义文件夹和文件名。
+所有输出都放在设置页的"输出文件夹"里（默认 `文档/实验排班输出`）：
+
+- `保存 JSON`：写入 `default_schedule.json`，程序启动时自动加载它。
+- `生成 PDF`：写入 `schedule_<年份>.pdf`、`schedule_<年份>.html` 和 `schedule_<年份>_render_log.txt`，同名文件直接覆盖。
+- `打开输出目录`：打开该文件夹，已生成 PDF 时选中它。
+- `导出 JSON`：弹出保存对话框，可选择任意文件夹和文件名。
 - 列表、PDF 实验列表、保存/导出的 JSON 均按开始日期自动排序并重新编号。
 
 ## 测试用环境变量

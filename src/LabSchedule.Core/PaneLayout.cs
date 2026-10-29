@@ -5,7 +5,7 @@ public static class PaneLayout
 {
     public const double DefaultEditorWidth = 390;
     public const double MinEditorWidth = 300;
-    public const double MinLeftWidth = 420;
+    public const double MinLeftWidth = 600;
     public const double SplitterSize = 8;
 
     /// <summary>Share of the calendar + list height that the list gets by default.</summary>

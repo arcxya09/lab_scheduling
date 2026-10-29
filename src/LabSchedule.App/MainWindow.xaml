@@ -148,7 +148,7 @@
         <!-- Workbench -->
         <Grid x:Name="Workbench" Grid.Row="3" Margin="8,0,8,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="420" />
+                <ColumnDefinition Width="*" MinWidth="600" />
                 <ColumnDefinition Width="8" />
                 <ColumnDefinition x:Name="EditorColumn" Width="390" />
             </Grid.ColumnDefinitions>
@@ -166,15 +166,19 @@
                     -->
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
                         <RowDefinition x:Name="TimelineRow" Height="2*" MinHeight="160" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition x:Name="ListRow" Height="*" MinHeight="96" />
                     </Grid.RowDefinitions>
 
-                    <Grid Padding="14" ColumnSpacing="10" RowSpacing="12">
+                    <Grid
+                        Padding="14,14,14,12"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        ColumnSpacing="10"
+                        RowSpacing="12">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="150" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="110" />
                             <ColumnDefinition Width="120" />
@@ -190,12 +194,13 @@
                             LostFocus="HistoryField_LostFocus"
                             Maximum="2200"
                             Minimum="1900"
-                            SpinButtonPlacementMode="Compact"
+                            SpinButtonPlacementMode="Inline"
                             ValidationMode="InvalidInputOverwritten"
                             ValueChanged="YearInput_ValueChanged" />
                         <TextBox
                             x:Name="TitleInput"
                             Grid.Column="1"
+                            MinWidth="140"
                             Header="标题"
                             GotFocus="HistoryField_GotFocus"
                             LostFocus="HistoryField_LostFocus"
@@ -218,46 +223,53 @@
                             <ComboBoxItem Content="横向" Tag="landscape" />
                             <ComboBoxItem Content="纵向" Tag="portrait" />
                         </ComboBox>
-                        <StackPanel Grid.Row="1" Grid.ColumnSpan="4" Orientation="Horizontal" Spacing="24">
-                            <CheckBox x:Name="CascadeInput" Click="ConfigCheck_Click" Content="联动后续安排" />
-                            <CheckBox x:Name="WeekendInput" Click="ConfigCheck_Click" Content="高亮周末" />
-                            <CheckBox x:Name="MaintenanceListInput" Click="ConfigCheck_Click" Content="实验列表包含维护" />
-                        </StackPanel>
+                        <!--
+                          Options on the left, item buttons on the right. When the card is too narrow
+                          for both, the buttons move to a second line (MainWindow.Layout.cs).
+                        -->
+                        <Grid x:Name="ActionsRow" Grid.Row="1" Grid.ColumnSpan="4" ColumnSpacing="16" RowSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel x:Name="OptionsPanel" VerticalAlignment="Center" Orientation="Horizontal" Spacing="20">
+                                <CheckBox x:Name="CascadeInput" Click="ConfigCheck_Click" Content="联动后续安排" />
+                                <CheckBox x:Name="WeekendInput" Click="ConfigCheck_Click" Content="高亮周末" />
+                                <CheckBox x:Name="MaintenanceListInput" Click="ConfigCheck_Click" Content="实验列表包含维护" />
+                            </StackPanel>
+                            <StackPanel x:Name="ItemButtonsPanel" Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                                <Button x:Name="AddExperimentButton" AutomationProperties.Name="插入实验" Click="AddExperimentButton_Click" Style="{StaticResource AccentButtonStyle}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="14" Glyph="&#xE710;" />
+                                        <TextBlock Text="插入实验" />
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="AddMaintenanceButton" AutomationProperties.Name="插入维护" Click="AddMaintenanceButton_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="14" Glyph="&#xE710;" />
+                                        <TextBlock Text="插入维护" />
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="DeleteButton" AutomationProperties.Name="删除" Click="DeleteButton_Click" Style="{StaticResource DangerButtonStyle}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                                        <TextBlock Text="删除" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
                     </Grid>
 
-                    <Border
-                        Grid.Row="1"
-                        Padding="14,10"
-                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="0,1,0,1">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button x:Name="AddExperimentButton" AutomationProperties.Name="插入实验" Click="AddExperimentButton_Click" Style="{StaticResource AccentButtonStyle}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <FontIcon FontSize="14" Glyph="&#xE710;" />
-                                    <TextBlock Text="插入实验" />
-                                </StackPanel>
-                            </Button>
-                            <Button x:Name="AddMaintenanceButton" AutomationProperties.Name="插入维护" Click="AddMaintenanceButton_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <FontIcon FontSize="14" Glyph="&#xE710;" />
-                                    <TextBlock Text="插入维护" />
-                                </StackPanel>
-                            </Button>
-                            <Button x:Name="DeleteButton" AutomationProperties.Name="删除" Click="DeleteButton_Click" Style="{StaticResource DangerButtonStyle}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <FontIcon FontSize="14" Glyph="&#xE74D;" />
-                                    <TextBlock Text="删除" />
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-                    </Border>
-
-                    <timeline:TimelineView x:Name="TimelinePanel" Grid.Row="2" />
+                    <timeline:TimelineView x:Name="TimelinePanel" Grid.Row="1" />
 
                     <!-- Item list -->
-                    <controls:SplitterBar x:Name="ListSplitter" Grid.Row="3" Height="9" Orientation="Horizontal" />
+                    <controls:SplitterBar x:Name="ListSplitter" Grid.Row="2" Height="9" Orientation="Horizontal" />
 
-                    <Grid Grid.Row="4">
+                    <Grid Grid.Row="3">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
@@ -445,25 +457,6 @@
                                 TextChanged="ItemText_TextChanged"
                                 TextWrapping="Wrap" />
                         </Grid>
-
-                        <Border Margin="0,6,0,0" Padding="0,12,0,0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
-                            <StackPanel Spacing="12">
-                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="输出" />
-                                <TextBox
-                                    x:Name="PdfPathInput"
-                                    Header="PDF 输出路径"
-                                    GotFocus="HistoryField_GotFocus"
-                                    LostFocus="HistoryField_LostFocus"
-                                    TextChanged="PathText_TextChanged" />
-                                <TextBox
-                                    x:Name="HtmlPathInput"
-                                    Header="HTML 输出路径"
-                                    GotFocus="HistoryField_GotFocus"
-                                    LostFocus="HistoryField_LostFocus"
-                                    TextChanged="PathText_TextChanged" />
-                                <TextBox x:Name="JsonPathInput" Header="默认 JSON 路径" IsReadOnly="True" />
-                            </StackPanel>
-                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -543,14 +536,15 @@
                         </Grid.ColumnDefinitions>
                         <FontIcon Glyph="&#xE8B7;" />
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="默认输出文件夹" />
-                            <TextBlock Style="{StaticResource SettingsDescriptionStyle}" Text="“保存 JSON”写入这里的 default_schedule.json，启动时也从这里加载；新生成的 PDF/HTML 默认也放在这里" />
+                            <TextBlock Text="输出文件夹" />
+                            <TextBlock Style="{StaticResource SettingsDescriptionStyle}" Text="保存 JSON、生成 PDF 和“打开输出目录”都使用这个文件夹" />
                             <TextBlock
                                 x:Name="OutputDirText"
                                 Margin="0,4,0,0"
                                 IsTextSelectionEnabled="True"
                                 Style="{StaticResource CaptionTextBlockStyle}"
                                 TextWrapping="Wrap" />
+                            <TextBlock x:Name="OutputFilesText" Margin="0,2,0,0" Style="{StaticResource SettingsDescriptionStyle}" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
                             <Button x:Name="ChangeOutputDirButton" Click="ChangeOutputDirButton_Click" Content="更改…" />

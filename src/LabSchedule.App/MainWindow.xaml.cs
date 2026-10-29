@@ -37,7 +37,6 @@ public sealed partial class MainWindow : Window
     private readonly IntPtr _hwnd;
 
     private Schedule _schedule = new();
-    private OutputPaths _paths = new();
     private ScheduleItem? _selected;
     private bool _cascadeUpdates = true;
     private EditSession? _editSession;
@@ -141,7 +140,6 @@ public sealed partial class MainWindow : Window
     {
         var payload = ScheduleStore.LoadInitial();
         _schedule = ScheduleRules.NormalizeState(payload.Schedule);
-        _paths = payload.Paths;
         ScheduleRules.RenumberInPlace(_schedule.Items);
         _selected = _schedule.Items.FirstOrDefault();
         _hasSavedDefault = payload.FromDefaultJson;
@@ -164,7 +162,6 @@ public sealed partial class MainWindow : Window
     {
         ScheduleRules.RenumberInPlace(_schedule.Items);
         RenderConfig();
-        RenderPaths();
         RenderEditor();
         RenderList();
         RenderTimeline();
@@ -192,13 +189,6 @@ public sealed partial class MainWindow : Window
         {
             _rendering--;
         }
-    }
-
-    private void RenderPaths()
-    {
-        SetText(PdfPathInput, _paths.PdfPath);
-        SetText(HtmlPathInput, _paths.HtmlPath);
-        SetText(JsonPathInput, _paths.JsonPath);
     }
 
     private void RenderEditor()
@@ -352,12 +342,6 @@ public sealed partial class MainWindow : Window
     private string SnapshotState() => ScheduleJson.Stringify(new JsonObject
     {
         ["schedule"] = ScheduleJson.ToJsonNode(ScheduleRules.NormalizeState(_schedule)),
-        ["paths"] = new JsonObject
-        {
-            ["pdf_path"] = _paths.PdfPath,
-            ["html_path"] = _paths.HtmlPath,
-            ["json_path"] = _paths.JsonPath
-        },
         ["selectedId"] = _selected?.Id,
         ["cascadeUpdates"] = _cascadeUpdates
     });
@@ -366,13 +350,6 @@ public sealed partial class MainWindow : Window
     {
         var state = ScheduleJson.Parse(snapshot)!.AsObject();
         _schedule = ScheduleRules.NormalizeState(ScheduleRules.NormalizeJson(state["schedule"]));
-        var paths = state["paths"]!.AsObject();
-        _paths = new OutputPaths
-        {
-            PdfPath = paths["pdf_path"]?.GetValue<string>() ?? "",
-            HtmlPath = paths["html_path"]?.GetValue<string>() ?? "",
-            JsonPath = paths["json_path"]?.GetValue<string>() ?? ""
-        };
         var selectedId = state["selectedId"]?.GetValue<string>();
         _selected = _schedule.Items.FirstOrDefault(item => item.Id == selectedId) ?? _schedule.Items.FirstOrDefault();
         _cascadeUpdates = state["cascadeUpdates"]?.GetValue<bool>() != false;
@@ -517,18 +494,6 @@ public sealed partial class MainWindow : Window
     }
 
     private void ConfigCheck_Click(object sender, RoutedEventArgs e) => ApplyFormChange(sender, UpdateConfigFromForm);
-
-    private void PathText_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (PdfPathInput.Text == _paths.PdfPath && HtmlPathInput.Text == _paths.HtmlPath) return;
-        ApplyFormChange(sender, UpdatePathsFromForm);
-    }
-
-    private void UpdatePathsFromForm()
-    {
-        _paths.PdfPath = PdfPathInput.Text;
-        _paths.HtmlPath = HtmlPathInput.Text;
-    }
 
     private void HistoryField_GotFocus(object sender, RoutedEventArgs e) => BeginFormEdit(sender);
 
@@ -751,7 +716,6 @@ public sealed partial class MainWindow : Window
             return;
         }
         _schedule = ScheduleRules.NormalizeState(result.Value!);
-        _paths = ScheduleStore.DefaultPaths(_schedule);
         _selected = _schedule.Items.FirstOrDefault();
         _hasSavedDefault = false;
         RecordHistory("导入 JSON");
@@ -768,7 +732,6 @@ public sealed partial class MainWindow : Window
             SetStatus(issues[0], StatusKind.Error);
             return;
         }
-        UpdatePathsFromForm();
         StoreResult<string> result;
         try
         {
@@ -784,10 +747,8 @@ public sealed partial class MainWindow : Window
             SetStatus(result.Error!, StatusKind.Error, 9000);
             return;
         }
-        _paths.JsonPath = result.Value!;
         _hasSavedDefault = true;
         _savedFingerprint = Fingerprint();
-        RenderPaths();
         UpdateDirtyState();
         SetStatus($"已保存到默认 JSON：{result.Value}", StatusKind.Ok, 6000);
     }
@@ -801,7 +762,6 @@ public sealed partial class MainWindow : Window
             SetStatus(issues[0], StatusKind.Error);
             return;
         }
-        UpdatePathsFromForm();
         var payload = CurrentPayload();
         var validation = ScheduleRules.Validate(payload);
         if (validation.Count > 0)
@@ -837,7 +797,6 @@ public sealed partial class MainWindow : Window
             SetStatus(issues[0], StatusKind.Error);
             return;
         }
-        UpdatePathsFromForm();
         var payload = CurrentPayload();
         var validation = ScheduleRules.Validate(payload);
         if (validation.Count > 0)
@@ -847,16 +806,10 @@ public sealed partial class MainWindow : Window
         }
         var prepared = ScheduleRules.PrepareSchedule(payload);
 
-        var pdfPath = _paths.PdfPath.Trim();
-        if (pdfPath.Length == 0)
-        {
-            var chosen = NativeMethods.ShowSaveDialog(_hwnd, "生成 PDF", "PDF 文件", "pdf",
-                Path.Combine(ScheduleStore.DefaultOutputDir, $"schedule_{prepared.Year}.pdf"));
-            if (chosen is null) return;
-            pdfPath = chosen;
-        }
-        var htmlPath = _paths.HtmlPath.Trim();
-        if (htmlPath.Length == 0) htmlPath = ScheduleStore.ReplaceExtension(pdfPath, ".html");
+        // Output always goes to the folder chosen on the settings page.
+        var outputs = ScheduleStore.DefaultPaths(prepared);
+        var pdfPath = outputs.PdfPath;
+        var htmlPath = outputs.HtmlPath;
 
         SetStatus("正在生成", StatusKind.Normal, 0);
         _generating = true;
@@ -870,10 +823,6 @@ public sealed partial class MainWindow : Window
                 ScheduleStore.RenderLogPath(pdfPath),
                 ScheduleStore.BuildRenderLog(pdfPath, htmlPath, render.Schedule, render.Warnings, DateTime.UtcNow));
 
-            _paths.PdfPath = pdfPath;
-            _paths.HtmlPath = htmlPath;
-            RecordHistory("更新输出路径");
-            RenderPaths();
             var warningText = render.Warnings.Count > 0 ? $"；{render.Warnings.Count} 条提醒" : "";
             SetStatus($"已生成：{pdfPath}{warningText}", StatusKind.Ok, 8000);
         }
@@ -891,16 +840,12 @@ public sealed partial class MainWindow : Window
     private void ShowFolderButton_Click(object sender, RoutedEventArgs e)
     {
         CommitPendingEdit();
-        UpdatePathsFromForm();
-        var target = new[] { _paths.PdfPath, _paths.HtmlPath, _paths.JsonPath }.FirstOrDefault(path => !string.IsNullOrWhiteSpace(path));
-        if (target is null)
-        {
-            SetStatus("没有可打开的输出路径", StatusKind.Error);
-            return;
-        }
+        var outputs = ScheduleStore.DefaultPaths(_schedule);
         try
         {
-            if (!NativeMethods.ShowInFolder(target)) SetStatus($"输出目录不存在：{Path.GetDirectoryName(Path.GetFullPath(target))}", StatusKind.Error);
+            // Select the generated PDF when there is one, otherwise just open the folder.
+            var target = File.Exists(outputs.PdfPath) ? outputs.PdfPath : ScheduleStore.DefaultOutputDir;
+            if (!NativeMethods.ShowInFolder(target)) SetStatus($"输出文件夹不存在：{ScheduleStore.DefaultOutputDir}", StatusKind.Error);
         }
         catch (Exception error)
         {
