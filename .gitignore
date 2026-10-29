@@ -4,3 +4,4 @@ dist/
 backups/
 .vs/
 *.user
+.claude/settings.local.json
