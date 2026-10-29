@@ -162,6 +162,23 @@ public class CoreTests
     }
 
     [Fact]
+    public void ContactDetailsAreSavedOnlyWhenFilledIn()
+    {
+        var schedule = Sample();
+        schedule.Items[0].Unit = "  示例大学  ";
+        schedule.Items[0].Phone = "010-12345678";
+        schedule.Items[0].Email = "zhangsan@example.com";
+        var text = ScheduleJson.ToFileText(ScheduleRules.PrepareSchedule(schedule));
+
+        Assert.Contains("\"leader\": \"张三\",\n      \"unit\": \"示例大学\",\n      \"phone\": \"010-12345678\",\n      \"email\": \"zhangsan@example.com\",\n      \"start_date\"", text);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(text, "\"unit\""));
+
+        var reloaded = ScheduleRules.NormalizeJson(ScheduleJson.Parse(text));
+        Assert.Equal(("示例大学", "010-12345678", "zhangsan@example.com"), (reloaded.Items[0].Unit, reloaded.Items[0].Phone, reloaded.Items[0].Email));
+        Assert.Equal(("", ""), (reloaded.Items[1].Unit, reloaded.Items[1].Phone));
+    }
+
+    [Fact]
     public void FilesRoundTripThroughTheStore()
     {
         var dir = Path.Combine(Path.GetTempPath(), "lab-schedule-tests", Guid.NewGuid().ToString("N"));

@@ -24,6 +24,16 @@ public sealed class ScheduleItem
     public string Type { get; set; } = ItemTypes.Experiment;
     public string Name { get; set; } = "";
     public string Leader { get; set; } = "";
+
+    /// <summary>实验单位 (organisation running the experiment). Optional; only written to JSON when set.</summary>
+    public string Unit { get; set; } = "";
+
+    /// <summary>负责人电话. Optional; only written to JSON when set.</summary>
+    public string Phone { get; set; } = "";
+
+    /// <summary>联系邮箱. Optional; only written to JSON when set.</summary>
+    public string Email { get; set; } = "";
+
     public string StartDate { get; set; } = "";
     public string EndDate { get; set; } = "";
     public string? Color { get; set; }

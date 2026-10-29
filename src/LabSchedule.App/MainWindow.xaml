@@ -362,7 +362,34 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
+                            <TextBox
+                                x:Name="ItemUnitInput"
+                                Grid.Row="3"
+                                Grid.ColumnSpan="2"
+                                Header="实验单位"
+                                GotFocus="HistoryField_GotFocus"
+                                LostFocus="HistoryField_LostFocus"
+                                TextChanged="ItemText_TextChanged" />
+                            <TextBox
+                                x:Name="ItemPhoneInput"
+                                Grid.Row="4"
+                                Header="负责人电话"
+                                InputScope="TelephoneNumber"
+                                GotFocus="HistoryField_GotFocus"
+                                LostFocus="HistoryField_LostFocus"
+                                TextChanged="ItemText_TextChanged" />
+                            <TextBox
+                                x:Name="ItemEmailInput"
+                                Grid.Row="4"
+                                Grid.Column="1"
+                                Header="联系邮箱"
+                                InputScope="EmailNameOrAddress"
+                                GotFocus="HistoryField_GotFocus"
+                                LostFocus="HistoryField_LostFocus"
+                                TextChanged="ItemText_TextChanged" />
                             <TextBox x:Name="ItemIdInput" Header="编号" IsReadOnly="True" />
                             <ComboBox
                                 x:Name="ItemTypeInput"
@@ -588,8 +615,17 @@
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock x:Name="CurrentVersionText" Text="当前版本" />
                             <TextBlock x:Name="UpdateStatusText" Style="{StaticResource SettingsDescriptionStyle}" Text="从 GitHub 获取最新版本信息" />
+                            <ProgressBar x:Name="SettingsUpdateProgress" Margin="0,8,0,0" Maximum="100" Visibility="Collapsed" />
                         </StackPanel>
-                        <Button x:Name="CheckUpdatesButton" Grid.Column="2" VerticalAlignment="Center" Click="CheckUpdatesButton_Click" Content="检查更新" />
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
+                            <Button
+                                x:Name="SettingsUpdateButton"
+                                Click="UpdateActionButton_Click"
+                                Content="立即更新"
+                                Style="{StaticResource AccentButtonStyle}"
+                                Visibility="Collapsed" />
+                            <Button x:Name="CheckUpdatesButton" Click="CheckUpdatesButton_Click" Content="检查更新" />
+                        </StackPanel>
                     </Grid>
                 </Border>
 

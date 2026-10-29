@@ -167,10 +167,8 @@ public sealed partial class MainWindow
         UpdateStatusText.Text = "正在检查…";
         try
         {
-            var release = await CheckForUpdateAsync();
-            UpdateStatusText.Text = release is null
-                ? $"已是最新版本（{DateTime.Now:HH:mm} 检查）"
-                : $"发现新版本 {release.Version}，可在主界面顶部的提示条中更新";
+            // When there is a newer version, ShowUpdateAvailable fills in the text and the "立即更新" button here.
+            if (await CheckForUpdateAsync() is null) UpdateStatusText.Text = $"已是最新版本（{DateTime.Now:HH:mm} 检查）";
         }
         catch (Exception error)
         {

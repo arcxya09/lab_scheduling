@@ -64,12 +64,12 @@ powershell -ExecutionPolicy Bypass -File scripts/release-win.ps1
 
 ## 发布新版本
 
-发布由 GitHub Actions（`.github/workflows/release.yml`）完成：
+发布由 GitHub Actions（`.github/workflows/release.yml`）自动完成，不需要手动打标签：
 
-1. 修改 `src/LabSchedule.App/LabSchedule.App.csproj` 里的 `<Version>`，可选地在 `docs/releases/v<版本>.md` 写发布说明。
-2. 提交后推送同名标签，例如 `git tag v3.0.1 && git push origin v3.0.1`。
-3. Actions 会在 Windows 上运行测试、打包便携版和安装版，并创建 Release 上传这两个文件。
-   也可以在 Actions 页面手动运行 "Release"，输入标签名。
+1. 修改 `src/LabSchedule.App/LabSchedule.App.csproj` 里的 `<Version>`，并在 `docs/releases/v<版本>.md` 写发布说明。
+2. 推送到 main。Actions 发现这个版本还没有发布，就会在 Windows 上运行测试、打包便携版和安装版，
+   创建标签 `v<版本>` 和 Release 并上传这两个文件。版本号没变的推送不会发布。
+3. 也可以推送 `v<版本>` 标签，或在 Actions 页面手动运行 "Release"。
 
 ## 输出文件
 

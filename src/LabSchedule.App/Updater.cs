@@ -186,6 +186,7 @@ internal static class Updater
         TaskCanceledException or OperationCanceledException => "连接超时",
         HttpRequestException { StatusCode: HttpStatusCode.Forbidden } => "GitHub 暂时拒绝了请求（可能是访问过于频繁），请稍后再试",
         HttpRequestException => "无法连接 GitHub，请检查网络",
+        InvalidDataException => "更新包已损坏，请重试",
         _ => error.Message
     };
 

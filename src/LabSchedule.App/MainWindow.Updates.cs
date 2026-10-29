@@ -50,22 +50,50 @@ public sealed partial class MainWindow
         return release;
     }
 
+    /// <summary>Shows the new version both in the bar on the main page and on the settings page.</summary>
     private void ShowUpdateAvailable(ReleaseInfo release)
     {
         _availableUpdate = release;
         UpdateBar.Severity = InfoBarSeverity.Informational;
         UpdateBar.Title = $"发现新版本 {release.Version}";
-        UpdateBar.Message = $"当前版本 {Updater.CurrentVersion}。更新会下载{(Updater.IsInstalledCopy ? "安装包" : "便携版")}并自动重启程序。";
-        UpdateActionButton.Content = "立即更新";
-        UpdateActionButton.IsEnabled = true;
-        UpdateProgress.Visibility = Visibility.Collapsed;
+        SetUpdateMessage($"当前版本 {Updater.CurrentVersion}。更新会下载{(Updater.IsInstalledCopy ? "安装包" : "便携版")}并自动重启程序。");
+        SetUpdateButtons("立即更新", enabled: true);
+        SetUpdateProgress(null);
+        SettingsUpdateButton.Visibility = Visibility.Visible;
+        UpdateStatusText.Text = $"发现新版本 {release.Version}。更新会下载{(Updater.IsInstalledCopy ? "安装包" : "便携版")}并自动重启程序。";
         UpdateNotesLink.Visibility = string.IsNullOrEmpty(release.PageUrl) ? Visibility.Collapsed : Visibility.Visible;
         if (!string.IsNullOrEmpty(release.PageUrl)) UpdateNotesLink.NavigateUri = new Uri(release.PageUrl);
         UpdateBar.IsOpen = true;
     }
 
+    private void SetUpdateMessage(string message)
+    {
+        UpdateBar.Message = message;
+        UpdateStatusText.Text = message;
+    }
+
+    private void SetUpdateButtons(string content, bool enabled)
+    {
+        foreach (var button in new[] { UpdateActionButton, SettingsUpdateButton })
+        {
+            button.Content = content;
+            button.IsEnabled = enabled;
+        }
+    }
+
+    /// <summary>Shows download progress on both pages; null hides it.</summary>
+    private void SetUpdateProgress(double? percent)
+    {
+        foreach (var bar in new[] { UpdateProgress, SettingsUpdateProgress })
+        {
+            bar.Visibility = percent is null ? Visibility.Collapsed : Visibility.Visible;
+            bar.Value = percent ?? 0;
+        }
+    }
+
     private void UpdateBar_CloseButtonClick(InfoBar sender, object args) => _downloadCancellation?.Cancel();
 
+    /// <summary>"立即更新" in the bar and on the settings page; while downloading it cancels.</summary>
     private async void UpdateActionButton_Click(object sender, RoutedEventArgs e)
     {
         if (_downloadCancellation is not null)
@@ -91,27 +119,26 @@ public sealed partial class MainWindow
         if (!await ConfirmUnsavedBeforeUpdateAsync()) return;
 
         _downloadCancellation = new CancellationTokenSource();
-        UpdateActionButton.Content = "取消";
-        UpdateProgress.Value = 0;
-        UpdateProgress.Visibility = Visibility.Visible;
-        UpdateBar.Message = "正在下载…";
+        SetUpdateButtons("取消", enabled: true);
+        SetUpdateProgress(0);
+        SetUpdateMessage("正在下载…");
         var progress = new Progress<double>(percent =>
         {
-            UpdateProgress.Value = percent;
-            UpdateBar.Message = $"正在下载… {percent:0}%";
+            SetUpdateProgress(percent);
+            SetUpdateMessage($"正在下载新版本 {release.Version}… {percent:0}%");
         });
         try
         {
             var package = await Updater.DownloadAsync(release, asset, progress, _downloadCancellation.Token);
-            UpdateBar.Message = "下载完成，正在关闭程序并安装更新…";
-            UpdateActionButton.IsEnabled = false;
+            SetUpdateMessage("下载完成，正在关闭程序并安装更新…");
+            SetUpdateButtons("正在安装", enabled: false);
             Updater.StartInstall(package, installed);
             Application.Current.Exit();
         }
         catch (OperationCanceledException)
         {
             ShowUpdateAvailable(release);
-            UpdateBar.Message = "已取消下载。";
+            SetUpdateMessage("已取消下载。");
         }
         catch (Exception error)
         {
@@ -128,8 +155,8 @@ public sealed partial class MainWindow
     {
         if (_availableUpdate is { } release) ShowUpdateAvailable(release);
         UpdateBar.Severity = InfoBarSeverity.Error;
-        UpdateBar.Message = message;
-        UpdateActionButton.Content = "重试";
+        SetUpdateMessage(message);
+        SetUpdateButtons("重试", enabled: true);
         UpdateBar.IsOpen = true;
     }
 

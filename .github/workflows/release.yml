@@ -1,59 +1,79 @@
 name: Release
 
-# Pushing a tag like v3.0.0 builds the app, runs the tests and publishes a GitHub release with
-# the portable zip and the MSI installer. It can also be started by hand from the Actions tab.
+# Publishes a release whenever main carries a version (the <Version> in LabSchedule.App.csproj)
+# that has not been released yet: runs the tests, builds the portable zip and the MSI installer,
+# creates the tag v<version> and the GitHub release. Pushes that keep the version do nothing.
+# Pushing a v* tag or running the workflow by hand from the Actions tab still works too.
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
   workflow_dispatch:
-    inputs:
-      tag:
-        description: "版本标签，例如 v3.0.0（需与 LabSchedule.App.csproj 中的 Version 一致）"
-        required: true
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: windows-latest
     env:
-      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: "10.0.x"
-
-      - name: Check version matches tag
+      - name: Decide whether to release
+        id: plan
         shell: pwsh
         run: |
           [xml]$csproj = Get-Content src/LabSchedule.App/LabSchedule.App.csproj -Encoding UTF8
           $version = ($csproj.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version
-          if ("v$version" -ne $env:TAG) { throw "Tag $env:TAG does not match project version $version" }
+          $tag = "v$version"
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne $tag) {
+            throw "Tag $env:GITHUB_REF_NAME does not match project version $version"
+          }
+          $published = $false
+          $state = gh release view $tag --json isDraft --jq '.isDraft' 2>$null
+          if ($LASTEXITCODE -eq 0 -and $state -eq 'false') { $published = $true }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "release=$((-not $published).ToString().ToLower())" >> $env:GITHUB_OUTPUT
+          if ($published) { "Version $version is already released; nothing to do." }
+          else { "Releasing $tag." }
+          exit 0  # "gh release view" fails for a new version; that is expected here
+
+      - uses: actions/setup-dotnet@v6
+        if: steps.plan.outputs.release == 'true'
+        with:
+          dotnet-version: "10.0.x"
 
       - name: Test
+        if: steps.plan.outputs.release == 'true'
         run: dotnet test tests/LabSchedule.Core.Tests -c Release
 
       - name: Build portable zip and installer
+        if: steps.plan.outputs.release == 'true'
         shell: powershell
         run: powershell -ExecutionPolicy Bypass -File scripts/release-win.ps1
 
       - name: Publish release
+        if: steps.plan.outputs.release == 'true'
         shell: pwsh
         env:
-          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.plan.outputs.tag }}
         run: |
           $files = Get-ChildItem dist/release -File | ForEach-Object { $_.FullName }
           $notes = "docs/releases/$env:TAG.md"
           $title = "实验排班生成器 $($env:TAG.TrimStart('v'))"
           gh release view $env:TAG *> $null
           if ($LASTEXITCODE -eq 0) {
-            # A release (or draft) already exists for this tag: refresh its files and publish it.
+            # A draft already exists for this version: refresh its files and publish it.
             gh release upload $env:TAG @files --clobber
             if (Test-Path $notes) { gh release edit $env:TAG --title $title --notes-file $notes --draft=false }
             else { gh release edit $env:TAG --title $title --draft=false }

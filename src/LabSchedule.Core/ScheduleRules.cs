@@ -196,6 +196,9 @@ public static partial class ScheduleRules
                     Type = type,
                     Name = item["name"].OrString("").Trim(),
                     Leader = item["leader"].OrString("").Trim(),
+                    Unit = item["unit"].OrString("").Trim(),
+                    Phone = item["phone"].OrString("").Trim(),
+                    Email = item["email"].OrString("").Trim(),
                     StartDate = item["start_date"].OrString(""),
                     EndDate = item["end_date"].OrString(""),
                     Color = type == ItemTypes.Maintenance
@@ -258,6 +261,9 @@ public static partial class ScheduleRules
             item.Type = item.Type == ItemTypes.Maintenance ? ItemTypes.Maintenance : ItemTypes.Experiment;
             item.Name = (item.Name ?? "").Trim();
             item.Leader = (item.Leader ?? "").Trim();
+            item.Unit = (item.Unit ?? "").Trim();
+            item.Phone = (item.Phone ?? "").Trim();
+            item.Email = (item.Email ?? "").Trim();
             item.StartDate ??= "";
             item.EndDate ??= "";
             item.Color = item.Type == ItemTypes.Maintenance ? MaintenanceColor : (string.IsNullOrEmpty(item.Color) ? null : item.Color);

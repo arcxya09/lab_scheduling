@@ -27,18 +27,28 @@ public static class ScheduleJson
             ["show_weekends"] = schedule.Settings.ShowWeekends,
             ["show_maintenance_in_list"] = schedule.Settings.ShowMaintenanceInList
         },
-        ["items"] = new JsonArray(schedule.Items.Select(item => (JsonNode)new JsonObject
+        ["items"] = new JsonArray(schedule.Items.Select(item => (JsonNode)ItemNode(item)).ToArray())
+    };
+
+    private static JsonObject ItemNode(ScheduleItem item)
+    {
+        var node = new JsonObject
         {
             ["id"] = item.Id,
             ["type"] = item.Type,
             ["name"] = item.Name,
-            ["leader"] = item.Leader,
-            ["start_date"] = item.StartDate,
-            ["end_date"] = item.EndDate,
-            ["color"] = item.Color,
-            ["description"] = item.Description
-        }).ToArray())
-    };
+            ["leader"] = item.Leader
+        };
+        // Contact details came after 2.0.0; leaving out empty ones keeps older files unchanged.
+        if (!string.IsNullOrEmpty(item.Unit)) node["unit"] = item.Unit;
+        if (!string.IsNullOrEmpty(item.Phone)) node["phone"] = item.Phone;
+        if (!string.IsNullOrEmpty(item.Email)) node["email"] = item.Email;
+        node["start_date"] = item.StartDate;
+        node["end_date"] = item.EndDate;
+        node["color"] = item.Color;
+        node["description"] = item.Description;
+        return node;
+    }
 
     /// <summary>The text written to disk: two-space indentation plus a trailing newline.</summary>
     public static string ToFileText(Schedule schedule) => Stringify(ToJsonNode(schedule), indent: 2) + "\n";

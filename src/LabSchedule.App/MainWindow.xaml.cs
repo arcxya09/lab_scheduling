@@ -197,7 +197,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var item = _selected;
-            foreach (var control in new Control[] { ItemTypeInput, ItemNameInput, ItemLeaderInput, ItemColorButton, ItemStartInput, ItemEndInput, ItemDescriptionInput })
+            foreach (var control in new Control[] { ItemTypeInput, ItemNameInput, ItemLeaderInput, ItemUnitInput, ItemPhoneInput, ItemEmailInput, ItemColorButton, ItemStartInput, ItemEndInput, ItemDescriptionInput })
             {
                 control.IsEnabled = item is not null;
             }
@@ -207,6 +207,9 @@ public sealed partial class MainWindow : Window
                 ItemTypeInput.SelectedIndex = 0;
                 SetText(ItemNameInput, "");
                 SetText(ItemLeaderInput, "");
+                SetText(ItemUnitInput, "");
+                SetText(ItemPhoneInput, "");
+                SetText(ItemEmailInput, "");
                 ShowEditorColor(ScheduleRules.DefaultColors[0]);
                 ItemStartInput.Date = null;
                 ItemEndInput.Date = null;
@@ -219,6 +222,9 @@ public sealed partial class MainWindow : Window
             ItemTypeInput.SelectedIndex = item.IsMaintenance ? 1 : 0;
             SetText(ItemNameInput, item.Name, trimAware: true);
             SetText(ItemLeaderInput, item.Leader, trimAware: true);
+            SetText(ItemUnitInput, item.Unit, trimAware: true);
+            SetText(ItemPhoneInput, item.Phone, trimAware: true);
+            SetText(ItemEmailInput, item.Email, trimAware: true);
             ShowEditorColor(ColorForItem(item));
             ItemColorButton.IsEnabled = !item.IsMaintenance;
             SetDate(ItemStartInput, item.StartDate);
@@ -508,6 +514,9 @@ public sealed partial class MainWindow : Window
         item.Type = (ItemTypeInput.SelectedItem as ComboBoxItem)?.Tag as string == ItemTypes.Maintenance ? ItemTypes.Maintenance : ItemTypes.Experiment;
         item.Name = ItemNameInput.Text.Trim();
         item.Leader = ItemLeaderInput.Text.Trim();
+        item.Unit = ItemUnitInput.Text.Trim();
+        item.Phone = ItemPhoneInput.Text.Trim();
+        item.Email = ItemEmailInput.Text.Trim();
         item.Color = item.IsMaintenance ? ScheduleRules.MaintenanceColor : _editorColor;
         item.Description = NormalizeNewlines(ItemDescriptionInput.Text).Trim();
         ScheduleEditing.ApplyDateChange(_schedule, item, ReadDate(ItemStartInput), ReadDate(ItemEndInput), _cascadeUpdates);
@@ -526,6 +535,9 @@ public sealed partial class MainWindow : Window
         var value = NormalizeNewlines(box.Text).Trim();
         var current = ReferenceEquals(box, ItemNameInput) ? item.Name
             : ReferenceEquals(box, ItemLeaderInput) ? item.Leader
+            : ReferenceEquals(box, ItemUnitInput) ? item.Unit
+            : ReferenceEquals(box, ItemPhoneInput) ? item.Phone
+            : ReferenceEquals(box, ItemEmailInput) ? item.Email
             : item.Description;
         if (value == current) return;
         ApplyFormChange(sender, UpdateItemFromForm);
