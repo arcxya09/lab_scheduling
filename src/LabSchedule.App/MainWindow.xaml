@@ -178,7 +178,7 @@
                         ColumnSpacing="10"
                         RowSpacing="12">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="120" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="110" />
                             <ColumnDefinition Width="120" />
@@ -194,7 +194,7 @@
                             LostFocus="HistoryField_LostFocus"
                             Maximum="2200"
                             Minimum="1900"
-                            SpinButtonPlacementMode="Inline"
+                            SpinButtonPlacementMode="Compact"
                             ValidationMode="InvalidInputOverwritten"
                             ValueChanged="YearInput_ValueChanged" />
                         <TextBox
