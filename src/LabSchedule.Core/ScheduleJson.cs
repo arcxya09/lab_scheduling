@@ -47,6 +47,7 @@ public static class ScheduleJson
         node["end_date"] = item.EndDate;
         node["color"] = item.Color;
         node["description"] = item.Description;
+        if (!string.IsNullOrEmpty(item.AttachmentFolder)) node["attachment_folder"] = item.AttachmentFolder;
         return node;
     }
 

@@ -91,6 +91,7 @@ public sealed partial class MainWindow : Window
         _statusTimer.Tick += (_, _) => ShowIssues();
 
         InitializeLayout();
+        InitializeAttachments();
         Boot();
         InitializeSettingsPage();
         AnnounceUpdateAndCheck();
@@ -161,8 +162,10 @@ public sealed partial class MainWindow : Window
     private void RenderAll()
     {
         ScheduleRules.RenumberInPlace(_schedule.Items);
+        _attachmentCounts.Clear();
         RenderConfig();
         RenderEditor();
+        RenderAttachments();
         RenderList();
         RenderTimeline();
         RenderSummary();
@@ -258,7 +261,7 @@ public sealed partial class MainWindow : Window
             }
             for (var index = 0; index < listed.Count; index++)
             {
-                _rows[index].Update(listed[index], ColorForItem(listed[index]));
+                _rows[index].Update(listed[index], ColorForItem(listed[index]), AttachmentCount(listed[index]));
             }
             var selectedRow = _rows.FirstOrDefault(row => ReferenceEquals(row.Item, _selected));
             if (!ReferenceEquals(ItemList.SelectedItem, selectedRow)) ItemList.SelectedItem = selectedRow;
@@ -659,10 +662,13 @@ public sealed partial class MainWindow : Window
     {
         if (_selected is null) return;
         CommitPendingEdit();
+        var hadAttachments = AttachmentCount(_selected) > 0;
         _schedule.Items.Remove(_selected);
         _selected = _schedule.Items.FirstOrDefault();
         RecordHistory("删除安排");
         RenderAll();
+        // The files stay on disk; undo links them again.
+        if (hadAttachments) SetStatus("已删除安排；它的附件仍保留在附件文件夹中，撤销即可恢复关联", StatusKind.Ok, 6000);
     }
 
     private void DuplicateButton_Click(object sender, RoutedEventArgs e)
@@ -673,6 +679,7 @@ public sealed partial class MainWindow : Window
         var copy = item.Clone();
         copy.Id = "";
         copy.Name = $"{item.Name} 副本";
+        copy.AttachmentFolder = "";
         _schedule.Items.Add(copy);
         ScheduleRules.RenumberInPlace(_schedule.Items);
         _selected = copy;

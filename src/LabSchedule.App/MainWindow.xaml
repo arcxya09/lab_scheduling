@@ -283,6 +283,7 @@
                                 <ColumnDefinition Width="130" />
                                 <ColumnDefinition Width="196" />
                                 <ColumnDefinition Width="56" />
+                                <ColumnDefinition Width="36" />
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="ListHeader0" Style="{StaticResource ListHeaderTextStyle}" Text="颜色" />
                             <TextBlock x:Name="ListHeader1" Grid.Column="1" Style="{StaticResource ListHeaderTextStyle}" Text="编号" />
@@ -291,6 +292,7 @@
                             <TextBlock x:Name="ListHeader4" Grid.Column="4" Style="{StaticResource ListHeaderTextStyle}" Text="负责人" />
                             <TextBlock x:Name="ListHeader5" Grid.Column="5" Style="{StaticResource ListHeaderTextStyle}" Text="起止日期" />
                             <TextBlock x:Name="ListHeader6" Grid.Column="6" Style="{StaticResource ListHeaderTextStyle}" Text="时长" />
+                            <TextBlock x:Name="ListHeader7" Grid.Column="7" Style="{StaticResource ListHeaderTextStyle}" Text="附件" />
                         </Grid>
                         <ListView
                             x:Name="ItemList"
@@ -315,6 +317,7 @@
                                             <ColumnDefinition Width="130" />
                                             <ColumnDefinition Width="196" />
                                             <ColumnDefinition Width="56" />
+                                            <ColumnDefinition Width="36" />
                                         </Grid.ColumnDefinitions>
                                         <Border
                                             Width="18"
@@ -330,6 +333,7 @@
                                         <TextBlock Grid.Column="4" Style="{StaticResource ListCellTextStyle}" Text="{x:Bind Leader, Mode=OneWay}" />
                                         <TextBlock Grid.Column="5" Style="{StaticResource ListCellTextStyle}" Text="{x:Bind DateRange, Mode=OneWay}" />
                                         <TextBlock Grid.Column="6" Style="{StaticResource ListCellTextStyle}" Text="{x:Bind Duration, Mode=OneWay}" />
+                                        <TextBlock Grid.Column="7" Style="{StaticResource ListCellTextStyle}" Text="{x:Bind AttachmentCount, Mode=OneWay}" />
                                     </Grid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -483,6 +487,127 @@
                                 LostFocus="HistoryField_LostFocus"
                                 TextChanged="ItemText_TextChanged"
                                 TextWrapping="Wrap" />
+                        </Grid>
+
+                        <!-- Files kept for the selected item (MainWindow.Attachments.cs). Files can be dropped anywhere here. -->
+                        <Grid
+                            x:Name="AttachmentsSection"
+                            AllowDrop="True"
+                            Background="Transparent"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            DragLeave="Attachments_DragLeave"
+                            DragOver="Attachments_DragOver"
+                            Drop="Attachments_Drop"
+                            RowSpacing="8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid Margin="0,6,0,0" ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="AttachmentsTitle" VerticalAlignment="Center" Style="{StaticResource BodyStrongTextBlockStyle}" Text="附件" />
+                                <Button
+                                    x:Name="AddAttachmentButton"
+                                    Grid.Column="1"
+                                    AutomationProperties.Name="添加附件"
+                                    Click="AddAttachmentButton_Click"
+                                    ToolTipService.ToolTip="选择文件，复制到这个安排的附件文件夹">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="14" Glyph="&#xE723;" />
+                                        <TextBlock Text="添加" />
+                                    </StackPanel>
+                                </Button>
+                                <Button
+                                    x:Name="OpenAttachmentFolderButton"
+                                    Grid.Column="2"
+                                    AutomationProperties.Name="打开附件文件夹"
+                                    Click="OpenAttachmentFolderButton_Click"
+                                    ToolTipService.ToolTip="在资源管理器中打开这个安排的附件文件夹">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="14" Glyph="&#xE838;" />
+                                        <TextBlock Text="打开文件夹" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                            <ListView
+                                x:Name="AttachmentList"
+                                Grid.Row="1"
+                                AutomationProperties.Name="附件列表"
+                                DoubleTapped="AttachmentList_DoubleTapped"
+                                KeyDown="AttachmentList_KeyDown"
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                SelectionMode="Single">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                        <Setter Property="MinHeight" Value="44" />
+                                        <Setter Property="Padding" Value="10,0,2,0" />
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="local:AttachmentRow">
+                                        <Grid
+                                            Background="Transparent"
+                                            ColumnSpacing="10"
+                                            ContextRequested="AttachmentRow_ContextRequested"
+                                            ToolTipService.ToolTip="{x:Bind Name}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="{x:Bind Glyph}" />
+                                            <StackPanel Grid.Column="1" Padding="0,4" VerticalAlignment="Center">
+                                                <TextBlock Style="{StaticResource ListCellTextStyle}" Text="{x:Bind Name}" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind Details}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
+                                            </StackPanel>
+                                            <Button
+                                                Grid.Column="2"
+                                                Padding="8,6"
+                                                AutomationProperties.Name="更多操作"
+                                                Background="Transparent"
+                                                BorderBrush="Transparent"
+                                                Click="AttachmentMore_Click"
+                                                ToolTipService.ToolTip="打开、重命名、删除…">
+                                                <FontIcon FontSize="14" Glyph="&#xE712;" />
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                            <Border
+                                x:Name="AttachmentEmpty"
+                                Grid.Row="1"
+                                Padding="12,18"
+                                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource ControlCornerRadius}">
+                                <TextBlock
+                                    x:Name="AttachmentEmptyText"
+                                    HorizontalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </Border>
+                            <TextBlock
+                                x:Name="AttachmentFolderText"
+                                Grid.Row="2"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
