@@ -39,6 +39,12 @@ public sealed class ScheduleItem
     public string? Color { get; set; }
     public string Description { get; set; } = "";
 
+    /// <summary>
+    /// Folder under 输出文件夹\附件 that holds this item's attachments, named when the first file is added.
+    /// Optional; only written to JSON when set.
+    /// </summary>
+    public string AttachmentFolder { get; set; } = "";
+
     public bool IsMaintenance => Type == ItemTypes.Maintenance;
 
     public ScheduleItem Clone() => (ScheduleItem)MemberwiseClone();

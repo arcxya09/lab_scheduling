@@ -109,7 +109,8 @@ public sealed partial class MainWindow
         OutputDirText.Text = ScheduleStore.DefaultOutputDir + (custom ? "" : "（默认）");
         OutputFilesText.Text =
             $"保存 JSON：{Path.GetFileName(outputs.JsonPath)}（启动时自动加载）\n" +
-            $"生成 PDF：{Path.GetFileName(outputs.PdfPath)}、{Path.GetFileName(outputs.HtmlPath)} 和生成日志（按排班年份命名，已有同名文件会被覆盖）";
+            $"生成 PDF：{Path.GetFileName(outputs.PdfPath)}、{Path.GetFileName(outputs.HtmlPath)} 和生成日志（按排班年份命名，已有同名文件会被覆盖）\n" +
+            $"添加附件：复制到 {Attachments.RootFolderName}\\<开始日期 名称>\\，每个安排一个文件夹（更改输出文件夹后，原来的附件要连同“{Attachments.RootFolderName}”文件夹一起移过去）";
         ResetOutputDirButton.IsEnabled = custom;
     }
 
@@ -147,6 +148,7 @@ public sealed partial class MainWindow
 
         var after = ScheduleStore.DefaultPaths(_schedule);
         RenderOutputDir();
+        RefreshAttachments();
         SetStatus(File.Exists(after.JsonPath)
             ? $"默认输出文件夹已改为：{ScheduleStore.DefaultOutputDir}"
             : $"默认输出文件夹已改为：{ScheduleStore.DefaultOutputDir}。请点“保存 JSON”把当前排班保存到新位置", StatusKind.Ok, 9000);

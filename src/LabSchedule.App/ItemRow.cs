@@ -14,6 +14,7 @@ public sealed class ItemRow : INotifyPropertyChanged
     private string _leader = "";
     private string _dateRange = "";
     private string _duration = "";
+    private string _attachmentCount = "";
     private Brush? _swatch;
 
     public ItemRow(ScheduleItem item)
@@ -37,9 +38,12 @@ public sealed class ItemRow : INotifyPropertyChanged
 
     public string Duration { get => _duration; private set => Set(ref _duration, value); }
 
+    /// <summary>Number of attachments, blank when there are none.</summary>
+    public string AttachmentCount { get => _attachmentCount; private set => Set(ref _attachmentCount, value); }
+
     public Brush? Swatch { get => _swatch; private set => Set(ref _swatch, value); }
 
-    public void Update(ScheduleItem item, string color)
+    public void Update(ScheduleItem item, string color, int attachmentCount)
     {
         Item = item;
         Id = item.Id;
@@ -48,6 +52,7 @@ public sealed class ItemRow : INotifyPropertyChanged
         Leader = string.IsNullOrEmpty(item.Leader) ? "-" : item.Leader;
         DateRange = $"{item.StartDate} 至 {item.EndDate}";
         Duration = $"{ScheduleRules.DurationDays(item)} 天";
+        AttachmentCount = attachmentCount > 0 ? attachmentCount.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
         if (Swatch is not SolidColorBrush brush || ColorUtil.ToHex(brush.Color) != color.ToUpperInvariant())
         {
             Swatch = new SolidColorBrush(ColorUtil.Parse(color));

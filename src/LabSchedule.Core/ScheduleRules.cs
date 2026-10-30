@@ -204,7 +204,8 @@ public static partial class ScheduleRules
                     Color = type == ItemTypes.Maintenance
                         ? MaintenanceColor
                         : NormalizeColor(color.Truthy ? color.ToJsString() : null),
-                    Description = item["description"].OrString("").Trim()
+                    Description = item["description"].OrString("").Trim(),
+                    AttachmentFolder = item["attachment_folder"].OrString("").Trim()
                 });
             }
         }
@@ -268,6 +269,7 @@ public static partial class ScheduleRules
             item.EndDate ??= "";
             item.Color = item.Type == ItemTypes.Maintenance ? MaintenanceColor : (string.IsNullOrEmpty(item.Color) ? null : item.Color);
             item.Description = (item.Description ?? "").Trim();
+            item.AttachmentFolder = (item.AttachmentFolder ?? "").Trim();
         }
         copy.Items = SortItemsByDate(copy.Items);
         return copy;

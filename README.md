@@ -78,6 +78,8 @@ powershell -ExecutionPolicy Bypass -File scripts/release-win.ps1
 - `保存 JSON`：写入 `default_schedule.json`，程序启动时自动加载它。
 - `生成 PDF`：写入 `schedule_<年份>.pdf`、`schedule_<年份>.html` 和 `schedule_<年份>_render_log.txt`，同名文件直接覆盖。
 - `打开输出目录`：打开该文件夹，已生成 PDF 时选中它。
+- 附件（3.4.0 起）：编辑栏底部的"附件"区把文件复制到 `附件\<开始日期 名称>\`，每个安排一个文件夹，
+  JSON 里只记录文件夹名（`attachment_folder`）。可以添加、拖入、打开、重命名、删除（移到回收站）。
 - `导出 JSON`：弹出保存对话框，可选择任意文件夹和文件名。
 - 列表、PDF 实验列表、保存/导出的 JSON 均按开始日期自动排序并重新编号。
 
